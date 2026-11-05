@@ -5,11 +5,12 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { EVENTO } from "@/data/evento";
-import { ESTANDES } from "@/data/planta";
+import { RESUMO_PLANTA } from "@/data/resumo-planta";
+import { PLANTA_DETALHADA } from "@/lib/ambiente";
 import { Botao } from "@/components/ui/Botao";
 import { Contador, EASE, LinhaMascara } from "@/components/motion/Animacoes";
 
-const totalEspacos = ESTANDES.length;
+const totalEspacos = RESUMO_PLANTA.total;
 const horasPorDia = 12; // 10h às 22h
 const dias = 5; // 20 a 24/11
 
@@ -92,19 +93,29 @@ export default function Hero() {
               transition={{ duration: 1.1, ease: EASE, delay: 0.25 }}
               className="absolute left-0 top-0 h-[62%] w-[70%] overflow-hidden rounded-[22px] border border-line bg-paper shadow-[0_30px_60px_-40px_rgba(29,27,26,0.55)]"
             >
-              <motion.div style={{ y: yPlanta, scale: escalaPlanta }} className="absolute inset-[-12%]">
-                <Image
-                  src="/planta/planta-oficial.webp"
-                  alt="Detalhe da planta oficial do evento"
-                  fill
-                  sizes="(max-width: 1024px) 70vw, 330px"
-                  priority
-                  className="object-cover object-[52%_38%]"
-                />
-              </motion.div>
-              <span className="absolute bottom-3 left-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur">
-                Planta do evento
-              </span>
+              {PLANTA_DETALHADA ? (
+                <>
+                  <motion.div style={{ y: yPlanta, scale: escalaPlanta }} className="absolute inset-[-12%]">
+                    <Image
+                      src="/planta/planta-oficial.webp"
+                      alt="Detalhe da planta oficial do evento"
+                      fill
+                      sizes="(max-width: 1024px) 70vw, 330px"
+                      priority
+                      className="object-cover object-[52%_38%]"
+                    />
+                  </motion.div>
+                  <span className="absolute bottom-3 left-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur">
+                    Planta do evento
+                  </span>
+                </>
+              ) : (
+                <div className="flex h-full flex-col justify-between p-5 sm:p-7">
+                  <p className="border-b border-line pb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-deep">Mega Fashion Outlet</p>
+                  <p className="py-4 font-display text-[clamp(1.4rem,4.5vw,2.25rem)] leading-tight tracking-tight text-ink">Planta sob consulta à organização</p>
+                  <p className="border-t border-line pt-4 text-xs leading-6 text-muted">Consulte os canais oficiais.</p>
+                </div>
+              )}
             </motion.div>
             {/* cartão com a logo */}
             <motion.div style={{ y: yCartao }} className="absolute bottom-0 right-[6%] w-[74%]">

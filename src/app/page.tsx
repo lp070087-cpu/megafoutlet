@@ -8,14 +8,15 @@ import { Botao } from "@/components/ui/Botao";
 import { Contador, Grupo, Item, Revelar } from "@/components/motion/Animacoes";
 import Mapa3DCard from "@/components/mapa3d/Mapa3DCard";
 import { AREAS_PLANTA, AVISO_PLANTA, EVENTO, HISTORICO_IMPRENSA, PUBLICACOES_OFICIAIS } from "@/data/evento";
-import { ESTANDES } from "@/data/planta";
+import { RESUMO_PLANTA } from "@/data/resumo-planta";
+import { PLANTA_DETALHADA } from "@/lib/ambiente";
 
 const wrap = "mx-auto max-w-7xl px-5 lg:px-10";
 const eyebrow = "text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-deep";
 const titulo = "font-display text-[clamp(2.4rem,6vw,4.25rem)] leading-[0.98] tracking-[-0.015em]";
 
-const principais = ESTANDES.filter((e) => e.serie === "principal").length;
-const feirinha = ESTANDES.filter((e) => e.serie === "feirinha").length;
+const principais = RESUMO_PLANTA.estandes;
+const feirinha = RESUMO_PLANTA.feirinha;
 
 const BENEFICIOS = [
   {
@@ -24,7 +25,7 @@ const BENEFICIOS = [
   },
   {
     t: "Espaço do tamanho da sua marca",
-    d: "A planta prevê estandes de 2 × 2 m a 9 × 6 m e módulos de feirinha. Escolha no mapa e indique seu interesse.",
+    d: `A planta prevê estandes de ${RESUMO_PLANTA.menor} a ${RESUMO_PLANTA.maior} e módulos de feirinha. ${PLANTA_DETALHADA ? "Escolha no mapa e indique seu interesse." : "Consulte os formatos e fale com a organização."}`,
   },
   {
     t: "Conversa direta com a organização",
@@ -120,13 +121,16 @@ export default function Home() {
               </Revelar>
               <Revelar atraso={0.1}>
                 <Botao href="/mapa" variante="secundario">
-                  Explorar o mapa
+                  {PLANTA_DETALHADA ? "Explorar o mapa" : "Consultar os espaços"}
                 </Botao>
               </Revelar>
             </div>
 
             <Grupo as="ul" className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-              {AREAS_PLANTA.map((a, i) => (
+              {(PLANTA_DETALHADA ? AREAS_PLANTA : [
+                { id: "estandes", nome: "Estandes comerciais", detalhe: `${RESUMO_PLANTA.estandes} estandes, de ${RESUMO_PLANTA.menor} a ${RESUMO_PLANTA.maior}.` },
+                ...RESUMO_PLANTA.estruturas.map((estrutura) => ({ id: estrutura.nome, nome: estrutura.nome, detalhe: estrutura.dimensao })),
+              ]).map((a, i) => (
                 <Item as="li" key={a.id} className="group relative bg-paper p-7 transition-colors duration-500 hover:bg-rose-soft/60">
                   <span className="text-xs tabular-nums text-rose-deep">{String(i + 1).padStart(2, "0")}</span>
                   <h3 className="mt-10 font-display text-2xl leading-tight tracking-tight">{a.nome}</h3>
@@ -147,13 +151,12 @@ export default function Home() {
           <div className={`${wrap} grid items-center gap-12 py-24 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:py-28`}>
             <div className="relative z-10">
               <Revelar>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-soft">Mapa interativo</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-soft">{PLANTA_DETALHADA ? "Mapa interativo" : "Espaços da feira"}</p>
                 <h2 id="mapa-chamada" className={`${titulo} mt-5`}>
                   Escolha o seu <em className="font-normal text-rose-soft">lugar</em> na feira.
                 </h2>
                 <p className="mt-6 max-w-md text-[17px] leading-8 text-ivory/70">
-                  Navegue pela planta oficial, amplie, veja número, dimensões e localização de cada espaço — e indique o seu
-                  preferido no cadastro.
+                  {PLANTA_DETALHADA ? "Navegue pela planta oficial, amplie, veja número, dimensões e localização de cada espaço - e indique o seu preferido no cadastro." : "Conheça os formatos e a estrutura da feira. A planta detalhada está sob consulta à organização; disponibilidade e condições são confirmadas pelos canais oficiais."}
                 </p>
               </Revelar>
               <Grupo as="ul" className="mt-10 grid max-w-md grid-cols-2 gap-6 border-t border-ivory/15 pt-8">
@@ -167,17 +170,36 @@ export default function Home() {
                   <p className="font-display text-5xl leading-none">
                     <Contador valor={feirinha} />
                   </p>
-                  <p className="mt-2 text-xs text-ivory/60">módulos de feirinha mapeados</p>
+                  <p className="mt-2 text-xs text-ivory/60">módulos de feirinha</p>
                 </Item>
               </Grupo>
               <Revelar atraso={0.2} className="mt-10">
                 <Botao href="/mapa" variante="claro">
-                  Abrir o mapa dos estandes
+                  {PLANTA_DETALHADA ? "Abrir o mapa dos estandes" : "Ver resumo dos espaços"}
                 </Botao>
               </Revelar>
             </div>
             <Revelar atraso={0.1} className="relative">
-              <Mapa3DCard />
+              {PLANTA_DETALHADA ? <Mapa3DCard /> : (
+                <div className="rounded-2xl border border-line bg-paper p-6 text-ink sm:p-10">
+                  <p className={eyebrow}>Resumo da planta</p>
+                  <h3 className="mt-5 font-display text-3xl leading-tight tracking-tight">{RESUMO_PLANTA.total} espaços. Diferentes possibilidades.</h3>
+                  <p className="mt-5 text-sm leading-7 text-muted">Estandes de {RESUMO_PLANTA.menor} a {RESUMO_PLANTA.maior}, em {RESUMO_PLANTA.formatos} formatos.</p>
+                  <h4 className="mt-7 text-xs font-semibold uppercase tracking-[0.18em]">Formatos frequentes</h4>
+                  <ul className="mt-3 grid grid-cols-2 gap-3 border-y border-line py-5 text-sm text-muted">
+                    {RESUMO_PLANTA.formatosFrequentes.map((formato) => <li key={formato.dimensao}>{formato.dimensao} <span className="block text-xs">{formato.quantidade} estandes</span></li>)}
+                  </ul>
+                  <h4 className="mt-7 text-xs font-semibold uppercase tracking-[0.18em]">Estruturas</h4>
+                  <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
+                    {RESUMO_PLANTA.estruturas.map((estrutura) => <li key={estrutura.nome}>{estrutura.nome} · {estrutura.dimensao}</li>)}
+                  </ul>
+                  <p className="mt-6 text-xs leading-6 text-muted">Planta sob consulta à organização.</p>
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                    <Botao href="/mapa">Consultar espaços</Botao>
+                    <Botao href={EVENTO.linktree} externo variante="secundario">Canais oficiais</Botao>
+                  </div>
+                </div>
+              )}
             </Revelar>
           </div>
         </section>
@@ -308,14 +330,14 @@ export default function Home() {
                 Sua marca no <em className="font-normal">maior outlet</em> de PE.
               </h2>
               <p className="mx-auto mt-6 max-w-lg text-[17px] leading-8 text-white/85">
-                Escolha o espaço no mapa e fale com a organização pelos canais oficiais para confirmar a participação.
+                {PLANTA_DETALHADA ? "Escolha o espaço no mapa e fale com a organização pelos canais oficiais para confirmar a participação." : "Conheça os formatos de espaços e fale com a organização pelos canais oficiais para confirmar a participação."}
               </p>
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Botao href="/expositor" variante="claro">
                   Quero ser expositor
                 </Botao>
                 <Botao href="/mapa" variante="secundario" className="border-white/40 text-white hover:border-ivory">
-                  Ver o mapa
+                  {PLANTA_DETALHADA ? "Ver o mapa" : "Ver os espaços"}
                 </Botao>
               </div>
             </Revelar>
