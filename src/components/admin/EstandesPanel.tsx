@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Mapa3DCard from "@/components/mapa3d/Mapa3DCard";
+import MapaInterativo from "@/components/mapa/MapaInterativo";
 import { AVISO_PLANTA } from "@/data/evento";
 import { ESTANDES, rotuloEstande } from "@/data/planta";
 import { alterarStatusEstande, historicoEstandes, statusEstandes } from "@/lib/demo-store";
@@ -37,7 +37,7 @@ const sectors = [...new Set(ESTANDES.map(item => item.setor))].sort();
 
 export function EstandesPanel() {
   const store = useAdminStore();
-  const [visualizacao, setVisualizacao] = useState<"lista" | "3d">("lista");
+  const [visualizacao, setVisualizacao] = useState<"lista" | "2d">("lista");
   const { feedback, run } = useFeedback();
   const [serie, setSerie] = useState("");
   const [dimension, setDimension] = useState("");
@@ -111,15 +111,14 @@ export function EstandesPanel() {
         <button
           type="button"
           className={buttonClass}
-          aria-pressed={visualizacao === "3d"}
-          onClick={() => setVisualizacao("3d")}
+          aria-pressed={visualizacao === "2d"}
+          onClick={() => setVisualizacao("2d")}
         >
-          Mapa 3D
+          Mapa 2D
         </button>
       </div>
-      {visualizacao === "3d" ? (
-        <Mapa3DCard
-          modoAdmin
+      {visualizacao === "2d" ? (
+        <MapaInterativo
           onSolicitarAlteracaoStatus={(estande, to) => {
             const from = currentStatus(estande.id);
             if (to !== from) setPending({ id: estande.id, from, to });

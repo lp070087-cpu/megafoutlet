@@ -1,14 +1,13 @@
 # Mapa público e revisão privada
 
 A aplicação continua usando exclusivamente os dados ilustrativos em `src/data/planta.ts`.
-O 2D e o 3D consultam a mesma base e o mesmo armazenamento de demonstração.
+O mapa da home, de /mapa e do painel demonstrativo consulta a mesma base ilustrativa.
 
 ## Melhorias
 
-- Filtros combinados de setor, dimensão e estado administrativo exato nos dois modos.
-- Seleção preservada entre 2D e 3D, inclusive com fallback WebGL.
-- Visão superior, isométrica, zoom, enquadramento e lista no 3D.
-- Links de alternativa 2D usam `?vista=2d`, evitando retornar ao 3D indisponível.
+- Filtros combinados de setor, dimensão e estado administrativo exato no mapa 2D.
+- Planta 2D estática e inteira no card. Tela cheia com zoom e deslocamento manual.
+- A imagem oficial fica no visualizador privado e continua fora do build público.
 - Reservado separado de Em análise nos indicadores; chaves antigas de dados preservadas.
 - Validador genérico de números duplicados, dimensões ausentes, sobreposições, rotação,
   limites e conflitos com corredores. Testes incluem casos negativos.

@@ -7,7 +7,7 @@ import Faq from "@/components/site/Faq";
 import Contagem from "@/components/site/Contagem";
 import { Botao } from "@/components/ui/Botao";
 import { Contador, Grupo, Item, Revelar } from "@/components/motion/Animacoes";
-import Mapa3DCard from "@/components/mapa3d/Mapa3DCard";
+import MapaInterativo from "@/components/mapa/MapaInterativo";
 import {
   AREAS_PLANTA,
   AVISO_PLANTA,
@@ -78,23 +78,23 @@ export default function Home() {
         <Hero />
 
         {/* CONTAGEM ------------------------------------------------------------ */}
-        <section aria-labelledby="contagem-titulo" className="bg-graphite text-ivory">
+        <section aria-labelledby="contagem-titulo" className="border-y border-line bg-paper text-ink">
           <div className={`${wrap} grid items-center gap-6 py-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-12 md:py-12`}>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-soft">Contagem regressiva</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-deep">Contagem regressiva</p>
               <h2 id="contagem-titulo" className="mt-3 font-display text-[clamp(1.8rem,4vw,2.6rem)] leading-tight tracking-tight">
-                Faltam poucos dias para o <em className="font-normal text-rose-soft">Mega.</em>
+                Faltam poucos dias para o <em className="font-normal text-rose-deep">Mega.</em>
               </h2>
-              <p className="mt-2 text-sm text-ivory/60">
+              <p className="mt-2 text-sm text-muted">
                 {EVENTO.datas.rotulo} · {EVENTO.horario}
               </p>
             </div>
-            <Contagem tom="escuro" />
+            <Contagem />
           </div>
         </section>
 
         {/* 01 — O EVENTO ------------------------------------------------------- */}
-        <section id="evento" className={`${wrap} scroll-mt-24 py-20 lg:py-28`}>
+        <section id="evento" className={`${wrap} scroll-mt-24 py-14 sm:py-20 lg:py-28`}>
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
             <Revelar className="lg:col-span-5">
               <p className={eyebrow}>01 · O evento</p>
@@ -155,7 +155,7 @@ export default function Home() {
         </section>
 
         {/* 02 — DESTAQUES DA EDIÇÃO -------------------------------------------- */}
-        <section id="destaques" className="scroll-mt-24 border-y border-line bg-paper py-20 lg:py-28">
+        <section id="destaques" className="scroll-mt-24 border-y border-line bg-paper py-14 sm:py-20 lg:py-28">
           <div className={wrap}>
             <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
               <Revelar className="lg:col-span-7">
@@ -194,7 +194,7 @@ export default function Home() {
         </section>
 
         {/* 03 — LOJISTAS ------------------------------------------------------- */}
-        <section id="lojistas" className={`${wrap} scroll-mt-24 py-20 lg:py-28`}>
+        <section id="lojistas" className={`${wrap} scroll-mt-24 py-14 sm:py-20 lg:py-28`}>
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
             <Revelar>
               <p className={eyebrow}>03 · Para lojistas e expositores</p>
@@ -242,7 +242,7 @@ export default function Home() {
         </section>
 
         {/* 04 — ESTRUTURA E MODALIDADES ---------------------------------------- */}
-        <section id="estrutura" className="scroll-mt-24 border-y border-line bg-sand/50 py-20 lg:py-28">
+        <section id="estrutura" className="scroll-mt-24 border-y border-line bg-sand/50 py-14 sm:py-20 lg:py-28">
           <div className={wrap}>
             <Revelar>
               <p className={eyebrow}>04 · Estrutura e modalidades</p>
@@ -283,54 +283,52 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 05 — MAPA 3D -------------------------------------------------------- */}
-        <section id="mapa" aria-labelledby="mapa-chamada" className="scroll-mt-20 bg-graphite text-ivory">
-          <div className={`${wrap} grid items-start gap-10 py-20 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] lg:gap-12 lg:py-28`}>
+        {/* 05 — MAPA 2D -------------------------------------------------------- */}
+        <section id="mapa" aria-labelledby="mapa-chamada" className="scroll-mt-20 border-y border-line bg-paper text-ink">
+          <div className={`${wrap} grid items-start gap-8 py-14 sm:py-20 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] lg:gap-12 lg:py-28`}>
             <div className="lg:sticky lg:top-28">
               <Revelar>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-soft">05 · Mapa interativo 3D</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-deep">05 · Mapa interativo 2D</p>
                 <h2 id="mapa-chamada" className={`${titulo} mt-5`}>
-                  Explore o <em className="font-normal text-rose-soft">pavilhão.</em>
+                  Explore o <em className="font-normal text-rose-deep">pavilhão.</em>
                 </h2>
-                <p className="mt-6 max-w-md text-[17px] leading-8 text-ivory/70">
-                  Gire, aproxime e navegue pelos setores. Toque em um espaço para ver formato, área e localização, e envie seu
+                <p className="mt-6 max-w-md text-[17px] leading-8 text-muted">
+                  Busque por número ou setor. Toque em um espaço para ver formato, área e localização, e envie seu
                   interesse direto do mapa.
                 </p>
                 {PLANTA_ILUSTRATIVA && (
-                  <p className="mt-5 max-w-md border-l-2 border-rose-soft pl-4 text-xs leading-6 text-ivory/70">
+                  <p className="mt-5 max-w-md border-l-2 border-rose pl-4 text-xs leading-6 text-muted">
                     Demonstração ilustrativa, não oficial. A planta oficial do evento é apresentada pela organização a quem deseja
                     expor.
                   </p>
                 )}
               </Revelar>
-              <Grupo as="ul" className="mt-10 grid max-w-md grid-cols-2 gap-6 border-t border-ivory/15 pt-8">
+              <Grupo as="ul" className="mt-10 grid max-w-md grid-cols-2 gap-6 border-t border-line pt-8">
                 <Item as="li">
                   <p className="font-display text-5xl leading-none">
                     <Contador valor={RESUMO_PLANTA.estandes} />
                   </p>
-                  <p className="mt-2 text-xs text-ivory/60">estandes numerados na planta</p>
+                  <p className="mt-2 text-xs text-muted">estandes numerados na planta</p>
                 </Item>
                 <Item as="li">
                   <p className="font-display text-5xl leading-none">
                     <Contador valor={RESUMO_PLANTA.feirinha} />
                   </p>
-                  <p className="mt-2 text-xs text-ivory/60">módulos de feirinha</p>
+                  <p className="mt-2 text-xs text-muted">módulos de feirinha</p>
                 </Item>
               </Grupo>
               <Revelar atraso={0.2} className="mt-10">
-                <Botao href="/mapa" variante="claro">
+                <Botao href="/mapa" variante="secundario">
                   Abrir mapa completo
                 </Botao>
               </Revelar>
             </div>
-            <Revelar atraso={0.1} className="relative min-w-0">
-              <Mapa3DCard />
-            </Revelar>
+            <MapaInterativo />
           </div>
         </section>
 
         {/* 06 — ATRAÇÕES ------------------------------------------------------- */}
-        <section id="atracoes" className={`${wrap} scroll-mt-24 py-20 lg:py-28`}>
+        <section id="atracoes" className={`${wrap} scroll-mt-24 py-14 sm:py-20 lg:py-28`}>
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <Revelar>
               <p className={eyebrow}>06 · Atrações e experiências</p>
@@ -363,7 +361,7 @@ export default function Home() {
         </section>
 
         {/* 07 — VISITANTES ----------------------------------------------------- */}
-        <section id="visitantes" className="scroll-mt-24 border-t border-line bg-paper py-20 lg:py-28">
+        <section id="visitantes" className="scroll-mt-24 border-t border-line bg-paper py-14 sm:py-20 lg:py-28">
           <div className={`${wrap} grid gap-12 lg:grid-cols-12`}>
             <Revelar className="lg:col-span-5">
               <p className={eyebrow}>07 · Para visitantes</p>
@@ -398,7 +396,7 @@ export default function Home() {
         </section>
 
         {/* 08 — LOCALIZAÇÃO ---------------------------------------------------- */}
-        <section id="localizacao" className="scroll-mt-24 border-t border-line bg-sand/60 py-20 lg:py-28">
+        <section id="localizacao" className="scroll-mt-24 border-t border-line bg-sand/60 py-14 sm:py-20 lg:py-28">
           <div className={`${wrap} grid gap-12 lg:grid-cols-12 lg:items-center`}>
             <Revelar className="lg:col-span-5">
               <p className={eyebrow}>08 · Localização</p>
@@ -441,7 +439,7 @@ export default function Home() {
         </section>
 
         {/* GALERIA (publicações oficiais) -------------------------------------- */}
-        <section id="galeria" className={`${wrap} scroll-mt-24 py-20 lg:py-28`}>
+        <section id="galeria" className={`${wrap} scroll-mt-24 py-14 sm:py-20 lg:py-28`}>
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <Revelar>
               <p className={eyebrow}>No Instagram</p>
@@ -494,7 +492,7 @@ export default function Home() {
         </section>
 
         {/* 09 — FAQ ------------------------------------------------------------ */}
-        <section id="faq" className="scroll-mt-24 border-t border-line py-20 lg:py-28">
+        <section id="faq" className="scroll-mt-24 border-t border-line py-14 sm:py-20 lg:py-28">
           <div className={`${wrap} grid gap-12 lg:grid-cols-12`}>
             <Revelar className="lg:col-span-4">
               <p className={eyebrow}>09 · Perguntas frequentes</p>

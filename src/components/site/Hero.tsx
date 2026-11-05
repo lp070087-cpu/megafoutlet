@@ -5,7 +5,6 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { EVENTO } from "@/data/evento";
-import { PLANTA_DETALHADA } from "@/lib/ambiente";
 import { ESTANDES } from "@/data/planta";
 import { AREAS_ESPECIAIS, PAVILHAO } from "@/data/areas";
 import { Botao } from "@/components/ui/Botao";
@@ -19,9 +18,7 @@ export default function Hero() {
   const reduz = useReducedMotion();
   const [faixaPausada, setFaixaPausada] = useState(false);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const yPlanta = useTransform(scrollYProgress, [0, 1], reduz ? [0, 0] : [0, 120]);
   const yCartao = useTransform(scrollYProgress, [0, 1], reduz ? [0, 0] : [0, -60]);
-  const escalaPlanta = useTransform(scrollYProgress, [0, 1], reduz ? [1, 1] : [1.06, 1.16]);
 
   const surgir = (atraso: number) =>
     reduz
@@ -30,7 +27,7 @@ export default function Hero() {
 
   return (
     <section ref={ref} aria-labelledby="hero-titulo" className="relative overflow-hidden">
-      <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-10 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:px-10 lg:pb-24 lg:pt-16">
+      <div className="mx-auto grid max-w-7xl gap-8 px-5 pb-12 sm:gap-12 sm:pb-16 pt-10 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:px-10 lg:pb-24 lg:pt-16">
         {/* Texto */}
         <div className="relative z-10 lg:col-span-7 lg:pt-6">
           <motion.p {...surgir(0.05)} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-deep">
@@ -39,7 +36,7 @@ export default function Hero() {
             <span>{EVENTO.local.cidade}</span>
           </motion.p>
 
-          <h1 id="hero-titulo" className="mt-6 font-display text-[clamp(3rem,10.5vw,7.25rem)] leading-[0.92] tracking-[-0.02em] text-ink">
+          <h1 id="hero-titulo" className="mt-6 font-display text-[clamp(2.55rem,10.5vw,7.25rem)] leading-[0.92] tracking-[-0.02em] text-ink">
             <LinhaMascara atraso={0.12}>O maior outlet</LinhaMascara>
             <LinhaMascara atraso={0.24}>
               de <em className="font-normal text-rose">Pernambuco</em>
@@ -86,47 +83,26 @@ export default function Hero() {
               transition={{ duration: 1.1, ease: EASE, delay: 0.1 }}
               className="absolute inset-y-[6%] right-0 w-[78%] rounded-[28px] bg-rose"
             />
-            {/* recorte da planta oficial */}
+            {/* planta ilustrativa */}
             <motion.div
-              initial={reduz ? { opacity: 0 } : { opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1.1, ease: EASE, delay: 0.25 }}
               className="absolute left-0 top-0 h-[62%] w-[70%] overflow-hidden rounded-[22px] border border-line bg-paper shadow-[0_30px_60px_-40px_rgba(29,27,26,0.55)]"
             >
-              {PLANTA_DETALHADA ? (
-                <>
-                  <motion.div style={{ y: yPlanta, scale: escalaPlanta }} className="absolute inset-[-12%]">
-                    <Image
-                      src="/planta/planta-oficial.webp"
-                      alt="Detalhe da planta oficial do evento"
-                      fill
-                      sizes="(max-width: 1024px) 70vw, 330px"
-                      priority
-                      className="object-cover object-[52%_38%]"
-                    />
-                  </motion.div>
-                  <span className="absolute bottom-3 left-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur">
-                    Planta do evento
-                  </span>
-                </>
-              ) : (
-                <a href="#mapa" className="group absolute inset-0 block" aria-label="Ir para o mapa interativo 3D (demonstração ilustrativa)">
-                  <motion.svg
-                    style={{ y: yPlanta, scale: escalaPlanta }}
+                  <a href="#mapa" className="group absolute inset-0 block" aria-label="Ir para o mapa interativo 2D (demonstração ilustrativa)">
+                  <svg
                     viewBox={`${PAVILHAO.x - 20} ${PAVILHAO.y - 20} ${PAVILHAO.w + 40} ${PAVILHAO.h + 40}`}
-                    preserveAspectRatio="xMidYMid slice"
+                    preserveAspectRatio="xMidYMid meet"
                     className="absolute inset-0 h-full w-full"
                     aria-hidden
                   >
                     <rect x={PAVILHAO.x} y={PAVILHAO.y} width={PAVILHAO.w} height={PAVILHAO.h} fill="#fbf8f3" stroke="#d5cabc" strokeWidth={4} />
                     {AREAS_ESPECIAIS.map((a) => <rect key={a.id} x={a.x} y={a.y} width={a.w} height={a.h} fill="#ebe3d8" />)}
                     {ESTANDES.map((e) => <rect key={e.id} x={e.x + 1} y={e.y + 1} width={e.w - 2} height={e.h - 2} rx={1.5} fill={e.cor} />)}
-                  </motion.svg>
+                  </svg>
                   <span className="absolute bottom-3 left-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur transition-colors group-hover:text-rose-deep">
-                    Mapa 3D · ilustrativo
+                    Mapa 2D · ilustrativo
                   </span>
                 </a>
-              )}
+
             </motion.div>
             {/* cartão com a logo */}
             <motion.div style={{ y: yCartao }} className="absolute bottom-0 right-[6%] w-[74%]">

@@ -2,7 +2,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-const DEMO = process.env.E2E_DEMO !== "0";
+const DEMO = process.env.E2E_DEMO !== "0" && process.env.E2E_ADMIN_DEMO !== "0";
 const ADMIN = ["/admin", "/admin/lojistas", "/admin/visitantes", "/admin/estandes"];
 const ROTAS = ["/", "/mapa", "/expositor", "/expositor?estande=A-12", "/visitante", ...(DEMO ? ADMIN : [])];
 

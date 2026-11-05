@@ -17,7 +17,7 @@ import { EVENTO } from "@/data/evento";
 const LINKS = [
   ["O evento", "/#evento"],
   ["Lojistas", "/#lojistas"],
-  ["Mapa 3D", "/#mapa"],
+  ["Mapa 2D", "/#mapa"],
   ["Atrações", "/#atracoes"],
   ["Visitantes", "/#visitantes"],
   ["FAQ", "/#faq"],

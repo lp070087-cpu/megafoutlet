@@ -1,4 +1,4 @@
-/** Fluxos de interação: navegação, mapa 2D, mapa 3D, canais oficiais (público) e formulários/admin (demo). */
+/** Fluxos de interação: navegação, mapa 2D, canais oficiais (público) e formulários/admin (demo). */
 import { expect, test } from "@playwright/test";
 
 /** Padrão do site publicado: modo demonstração ativo. E2E_DEMO=0 testa um build com NEXT_PUBLIC_MODO_DEMO=0. */
@@ -6,8 +6,6 @@ const DEMO = process.env.E2E_DEMO !== "0";
 
 async function abrirMapa2D(page: import("@playwright/test").Page, url = "/mapa") {
   await page.goto(url);
-  const botao2d = page.getByRole("group", { name: "Alternar entre mapa 2D e 3D" }).getByRole("button", { name: "2d" });
-  if ((await botao2d.getAttribute("aria-pressed")) !== "true") await botao2d.click();
 }
 
 test("home: CTAs levam a expositor e visitante", async ({ page }) => {
@@ -72,58 +70,13 @@ test("mapa 2D: indicadores somam 275 e filtros alteram a contagem", async ({ pag
   await abrirMapa2D(page);
   const ind = page.getByRole("list", { name: "Indicadores de disponibilidade" });
   await expect(ind).toContainText("275");
-  await page.getByRole("button", { name: "Feirinha" }).click();
-  await expect(page.getByText(/20\s*espaços exibidos/)).toBeVisible();
-});
-
-test("mapa 2D: zoom por botão altera a escala", async ({ page }) => {
-  await abrirMapa2D(page);
-  const palco = page.locator("[role=application] > div").first();
-  const antes = await palco.evaluate((el) => (el as HTMLElement).style.transform);
-  await page.getByRole("button", { name: "Ampliar" }).click();
-  await page.waitForTimeout(800);
-  const depois = await palco.evaluate((el) => (el as HTMLElement).style.transform);
-  expect(depois).not.toBe(antes);
+  await page.getByLabel("Setor", { exact: true }).selectOption("Feirinha");
+  await expect(page.getByText("20 espaços encontrados")).toBeVisible();
 });
 
 test("mapa 2D: deep link ?estande= abre o detalhe", async ({ page }) => {
   await page.goto("/mapa?estande=F-05");
   await expect(page.getByRole("dialog").getByRole("heading", { name: "Nº F05" })).toBeVisible();
-});
-
-test("mapa 3D: carrega cena (ou alternativa 2D) com indicadores calculados", async ({ page }) => {
-  await page.goto("/");
-  const card = page.getByRole("article").filter({ hasText: "Explore os espaços da feira." });
-  await card.scrollIntoViewIfNeeded();
-  await expect(card).toBeVisible();
-  await expect(card.locator("canvas").or(card.getByRole("link", { name: /mapa 2D/i }).first())).toBeVisible({ timeout: 30_000 });
-  await expect(card).toContainText("Demonstração ilustrativa · não oficial");
-  const contagem = card.getByRole("list", { name: "Contagem de espaços por status" });
-  await expect(contagem).toContainText("Não confirmado: 275");
-});
-
-test("mapa 3D: busca, setores, lista acessível e redefinir câmera", async ({ page }) => {
-  await page.goto("/mapa");
-  const card = page.getByRole("article").filter({ hasText: "Explore os espaços da feira." });
-  const temCanvas = await card.locator("canvas").waitFor({ timeout: 30_000 }).then(() => true, () => false);
-  const setores = card.getByRole("group", { name: "Navegar por setor" });
-  await setores.getByRole("button", { name: "Setor B" }).click();
-  await expect(setores.getByRole("button", { name: "Setor B" })).toHaveAttribute("aria-pressed", "true");
-  await card.getByRole("button", { name: "Lista" }).click();
-  await expect(card.getByRole("region", { name: "Setor B" })).toBeVisible();
-  await card.getByRole("region", { name: "Setor B" }).getByRole("button", { name: "B07" }).click();
-  await expect(card.getByRole("dialog").getByRole("heading", { name: "Espaço B07" })).toBeVisible();
-  await card.getByRole("button", { name: "Fechar detalhes do estande" }).click();
-  const busca = card.getByRole("searchbox", { name: /Buscar espaço/ });
-  await busca.fill("C03");
-  await busca.press("Enter");
-  if (temCanvas) {
-    await expect(card.getByRole("dialog").getByRole("heading", { name: "Espaço C03" })).toBeVisible();
-    await expect(card.getByRole("dialog").getByRole("link", { name: /Quero expor/ })).toHaveAttribute("href", "/expositor?estande=C-03");
-  }
-  const reset = card.getByRole("button", { name: /Redefinir câmera/ });
-  if (temCanvas) await reset.click();
-  else await expect(reset).toBeDisabled();
 });
 
 test.describe("build público (sem coleta de dados)", () => {
@@ -197,6 +150,7 @@ test.describe("modo demonstração (formulários e admin)", () => {
   });
 
   test("admin: entra, carrega dados fictícios e status reflete no mapa", async ({ page }) => {
+    test.skip(process.env.E2E_ADMIN_DEMO === "0", "painel restrito no deploy público");
     await page.goto("/admin");
     await page.getByRole("button", { name: "Entrar no modo demonstração" }).click();
     await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible();

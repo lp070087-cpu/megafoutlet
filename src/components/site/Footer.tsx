@@ -21,7 +21,7 @@ export function Footer() {
             <ul className="mt-3 grid">
               <li><Link className={link} href="/#evento">O evento</Link></li>
               <li><Link className={link} href="/#lojistas">Para lojistas</Link></li>
-              <li><Link className={link} href="/mapa">Mapa 2D e 3D</Link></li>
+              <li><Link className={link} href="/mapa">Mapa 2D</Link></li>
               <li><Link className={link} href="/#atracoes">Atrações</Link></li>
               <li><Link className={link} href="/#faq">Perguntas frequentes</Link></li>
             </ul>
@@ -51,10 +51,10 @@ export function Footer() {
         <div className="mt-12 flex flex-col justify-between gap-4 border-t border-line pt-6 text-xs leading-5 text-muted sm:flex-row sm:items-center">
           <p className="max-w-2xl">
             {MODO_DEMO ? "Ambiente de demonstração: formulários não enviam dados à organização. " : ""}
-            {PLANTA_ILUSTRATIVA ? "Mapa 3D ilustrativo, não oficial. " : ""}
+            {PLANTA_ILUSTRATIVA ? "Mapa 2D ilustrativo, não oficial. " : ""}
             Informações conforme canais oficiais do evento; programação e planta sujeitas a alterações pela organização.
           </p>
-          <div className="flex shrink-0 items-center gap-5">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             {ADMIN_DEMO && <Link className="inline-flex min-h-11 items-center underline underline-offset-4" href="/admin">Painel (demonstração)</Link>}
             <span>Apresentação desenvolvida pela Unitrix</span>
           </div>

@@ -10,7 +10,7 @@ import { AVISO_ILUSTRATIVO, PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
 export const metadata: Metadata = {
   title: "Mapa dos estandes",
   description: PLANTA_ILUSTRATIVA
-    ? "Demonstração ilustrativa em 2D e 3D da estrutura de exposição do Mega Fashion Outlet 2026. Planta oficial sob consulta à organização."
+    ? "Demonstração ilustrativa em 2D da estrutura de exposição do Mega Fashion Outlet 2026. Planta oficial sob consulta à organização."
     : "Explore a planta da Mega Fashion Outlet 2026 e manifeste interesse em um espaço de exposição.",
 };
 
@@ -18,8 +18,8 @@ type Params = Promise<Record<string, string | string[] | undefined>>;
 
 /** Lê ?estande= dentro de um limite de Suspense (exigência do Next 16 para não bloquear o prerender). */
 async function ExploradorComParametros({ searchParams }: { searchParams: Params }) {
-  const { estande, vista } = await searchParams;
-  return <ExploradorMapa vistaInicial={vista === "2d" ? "2d" : undefined} estandeInicial={typeof estande === "string" ? estande : undefined} />;
+  const { estande } = await searchParams;
+  return <ExploradorMapa estandeInicial={typeof estande === "string" ? estande : undefined} />;
 }
 
 const principais = ESTANDES.filter((e) => e.serie === "principal").length;
@@ -40,7 +40,7 @@ export default function MapaPage({ searchParams }: { searchParams: Params }) {
             </h1>
             <p className="max-w-md text-[15px] leading-relaxed text-muted">
               {PLANTA_ILUSTRATIVA
-                ? `Explore em 3D ou 2D como a estrutura do ${EVENTO.local.nome} se organiza em setores, com ${principais} espaços de exposição e ${feirinha} módulos de feirinha.`
+                ? `Explore em 2D como a estrutura do ${EVENTO.local.nome} se organiza em setores, com ${principais} espaços de exposição e ${feirinha} módulos de feirinha.`
                 : `Navegue pela planta oficial do ${EVENTO.local.nome}. São ${principais} estandes numerados e ${feirinha} módulos de feirinha, com dimensões e localização conforme o projeto enviado pela organização.`}
             </p>
           </div>

@@ -10,8 +10,8 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Motion �
 
 | Rota | Conteúdo |
 |---|---|
-| `/` | Landing: hero, contagem regressiva, evento, destaques, lojistas, estrutura e modalidades, mapa 3D, atrações, visitantes, localização, FAQ, CTA |
-| `/mapa` | Mapa interativo 3D e 2D (busca, setores, lista acessível, zoom, redefinir câmera) — `?estande=<id>` abre um espaço no 2D |
+| `/` | Landing: hero, contagem regressiva, evento, destaques, lojistas, estrutura e modalidades, mapa 2D, atrações, visitantes, localização, FAQ, CTA |
+| `/mapa` | Mapa interativo 2D (busca, filtros, lista acessível e tela cheia com ampliação manual) — `?estande=<id>` abre um espaço no 2D |
 | `/expositor` | Formulário de interesse do expositor — `?estande=<id>` traz o espaço escolhido no mapa |
 | `/visitante` | Formulário de intenção de visita |
 | `/admin/*` | Painel de demonstração (dados fictícios + cadastros deste navegador) |

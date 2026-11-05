@@ -2,19 +2,19 @@
 
 /*
  * Mega Fashion Outlet — tokens de design
- * Cores da marca amostradas da logo oficial (planta do evento enviada pela organização):
- *   rosa  #C34F66  ·  grafite #353535
+ * Rosa amostrado de public/brand/logo-mega-fashion.png:
+ *   rosa  #C54D66  ·  grafite #353535
  */
 :root {
-  --ivory: #faf7f2;
+  --ivory: #ffffff;
   --paper: #ffffff;
-  --sand: #efe8de;
-  --line: #e3dbd0;
-  --ink: #1d1b1a;
+  --sand: #f7f4f5;
+  --line: #e8e3e5;
+  --ink: #1c1a1b;
   --graphite: #353535;
-  --muted: #6c6560;
-  --rose: #c34f66;
-  --rose-deep: #a03f53;
+  --muted: #686168;
+  --rose: #c54d66;
+  --rose-deep: #983349;
   --rose-soft: #f6e3e7;
   --success: #2f6b4f;
   --danger: #b3261e;
@@ -104,6 +104,10 @@ html.lenis body {
 }
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
+}
+
+html:has(dialog[open][aria-labelledby$="-tela-cheia"]) {
+  overflow: hidden;
 }
 
 /* Evita rolagem horizontal acidental no mobile */
