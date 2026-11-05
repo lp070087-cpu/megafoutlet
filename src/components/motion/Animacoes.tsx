@@ -32,7 +32,7 @@ const itemReduzido: Variants = {
   visivel: { opacity: 1, transition: { duration: 0.3 } },
 };
 
-type Props = { children: ReactNode; className?: string; as?: "div" | "section" | "ul" | "li" | "article" };
+type Props = { children: ReactNode; className?: string; as?: "div" | "section" | "ul" | "li" | "article" | "dl" };
 
 /** Contêiner que revela os filhos <Item> em sequência ao entrar na tela. */
 export function Grupo({ children, className, as = "div", margem = "-80px" }: Props & { margem?: string }) {

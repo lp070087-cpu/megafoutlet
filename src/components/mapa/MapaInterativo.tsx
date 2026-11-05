@@ -7,9 +7,38 @@ import { ArrowRight, List, Map as MapIcon, Maximize2, Minus, Plus, Search, X } f
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ESTANDES, PLANTA, type Estande } from "@/data/planta";
 import { AVISO_PLANTA } from "@/data/evento";
+import { ACESSOS, AREAS_ESPECIAIS, PAVILHAO } from "@/data/areas";
 import { useStatusEstandes } from "@/lib/useStatusEstandes";
 import { GRUPOS_STATUS } from "@/lib/types";
-import { MODO_DEMO } from "@/lib/ambiente";
+import { AVISO_ILUSTRATIVO, MODO_DEMO, PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
+
+/** Desenho vetorial do pavilhão ILUSTRATIVO (sem imagem da planta oficial). */
+function PavilhaoIlustrativo() {
+  return (
+    <g aria-hidden>
+      <rect x={PAVILHAO.x} y={PAVILHAO.y} width={PAVILHAO.w} height={PAVILHAO.h} fill="#fbf8f3" stroke="#bdb2a4" strokeWidth={3} rx={4} />
+      {AREAS_ESPECIAIS.map((a) => (
+        <g key={a.id}>
+          <rect x={a.x} y={a.y} width={a.w} height={a.h} fill="#e9e1d5" stroke="#bdb2a4" strokeWidth={1} rx={2} />
+          <text x={a.x + a.w / 2} y={a.y + a.h / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.min(13, a.w / 7)} fill="#5e5852" style={{ fontFamily: "var(--font-sans)" }}>
+            {a.nome}
+          </text>
+        </g>
+      ))}
+      {ACESSOS.map((a) => (
+        <g key={a.id}>
+          <circle cx={a.x} cy={a.y} r={9} fill={a.tipo === "entrada" ? "#c34f66" : "#527264"} />
+          <text x={a.x} y={a.y + (a.y > PAVILHAO.y + PAVILHAO.h - 2 ? 26 : -16)} textAnchor="middle" fontSize={12} fill="#3b3734" style={{ fontFamily: "var(--font-sans)" }}>
+            {a.rotulo}
+          </text>
+        </g>
+      ))}
+      <text x={PAVILHAO.x + 14} y={PAVILHAO.y + PAVILHAO.h - 14} fontSize={13} fontWeight={700} fill="#a03f53" style={{ fontFamily: "var(--font-sans)", letterSpacing: "0.12em" }}>
+        DEMONSTRAÇÃO ILUSTRATIVA · NÃO OFICIAL
+      </text>
+    </g>
+  );
+}
 
 /* ---------------------------------------------------------------- filtros */
 type FiltroId = "todos" | "compactos" | "medios" | "amplos" | "feirinha" | "alimentacao";
@@ -23,7 +52,7 @@ const FILTROS: { id: FiltroId; rotulo: string; teste: (e: Estande) => boolean }[
 ];
 
 const SERIE_ROTULO: Record<Estande["serie"], string> = {
-  principal: "Estande",
+  principal: PLANTA_ILUSTRATIVA ? "Espaço" : "Estande",
   feirinha: "Feirinha",
   alimentacao: "Praça de alimentação",
 };
@@ -51,7 +80,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
   const [modo, setModo] = useState<"mapa" | "lista">("mapa");
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [ativoIdx, setAtivoIdx] = useState(0);
-  const [modoCor, setModoCor] = useState<"planta" | "status">("status");
+  const [modoCor, setModoCor] = useState<"planta" | "status">(PLANTA_ILUSTRATIVA ? "planta" : "status");
   const st = useStatusEstandes();
   const corGrupo = (id: string) => GRUPOS_STATUS.find((g) => g.id === st.grupoDe(id))!;
   const detalheRef = useRef<HTMLButtonElement>(null);
@@ -77,7 +106,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
   const visiveis = useMemo(() => new Set(ESTANDES.filter(testeFiltro).map((e) => e.id)), [testeFiltro]);
 
   const resultados = useMemo(() => {
-    const q = busca.trim().toLowerCase().replace(/^0+(?=\d)/, "");
+    const q = busca.trim().toLowerCase().replace(/-/g, "").replace(/^0+(?=\d)/, "");
     if (!q) return [];
     return ESTANDES.filter((e) => {
       const n = e.numero.toLowerCase().replace(/^0+(?=\d)/, "");
@@ -271,7 +300,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
             {(
               [
                 ["status", "Status"],
-                ["planta", "Cores da planta"],
+                ["planta", PLANTA_ILUSTRATIVA ? "Cores por setor" : "Cores da planta"],
               ] as const
             ).map(([id, rotulo]) => (
               <button
@@ -302,7 +331,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
             type="search"
             inputMode="search"
             autoComplete="off"
-            placeholder="Buscar nº do estande, ex.: 142"
+            placeholder={PLANTA_ILUSTRATIVA ? "Buscar espaço, ex.: A12 ou Setor B" : "Buscar nº do estande, ex.: 142"}
             value={busca}
             onChange={(e) => {
               setBusca(e.target.value);
@@ -429,7 +458,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
               }}
               onTransitionEnd={() => setAnimando(false)}
             >
-              <Image
+              {!PLANTA_ILUSTRATIVA && <Image
                 src="/planta/planta-oficial.webp"
                 alt="Planta baixa oficial do evento Mega Fashion Outlet 2026 no Centro de Convenções de Pernambuco"
                 width={PLANTA.largura}
@@ -438,7 +467,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
                 priority
                 draggable={false}
                 className="pointer-events-none absolute inset-0 h-full w-full"
-              />
+              />}
               <svg
                 viewBox={`0 0 ${PLANTA.largura} ${PLANTA.altura}`}
                 width={PLANTA.largura}
@@ -446,6 +475,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
                 className="absolute inset-0"
                 aria-hidden
               >
+                {PLANTA_ILUSTRATIVA && <PavilhaoIlustrativo />}
                 {/* véu suave para dar destaque aos espaços filtrados */}
                 {filtro !== "todos" && <rect x={0} y={0} width={PLANTA.largura} height={PLANTA.altura} fill="#faf7f2" opacity={0.55} pointerEvents="none" />}
                 {ESTANDES.map((e) => {
@@ -460,9 +490,9 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
                       width={e.w}
                       height={e.h}
                       rx={0.6}
-                      fill={sel || hov ? "#c34f66" : !ativo ? "transparent" : modoCor === "status" ? corGrupo(e.id).cor : filtro !== "todos" ? e.cor : "transparent"}
+                      fill={sel || hov ? "#c34f66" : !ativo ? "transparent" : modoCor === "status" ? corGrupo(e.id).cor : filtro !== "todos" || PLANTA_ILUSTRATIVA ? e.cor : "transparent"}
                       fillOpacity={sel ? 0.5 : hov ? 0.25 : modoCor === "status" ? 0.5 : 1}
-                      stroke={sel ? "#a03f53" : hov ? "#c34f66" : ativo && (modoCor === "status" || filtro !== "todos") ? "#1d1b1a" : "transparent"}
+                      stroke={sel ? "#a03f53" : hov ? "#c34f66" : ativo && (modoCor === "status" || filtro !== "todos" || PLANTA_ILUSTRATIVA) ? "#1d1b1a" : "transparent"}
                       strokeWidth={sel ? 2.2 : hov ? 1.4 : 0.6}
                       vectorEffect="non-scaling-stroke"
                       className={ativo ? "cursor-pointer" : "pointer-events-none"}
@@ -513,7 +543,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
                       <span key={c} className="size-3 rounded-[3px] ring-1 ring-ink/10" style={{ background: c }} />
                     ))}
                   </span>
-                  Cores da planta oficial
+                  {PLANTA_ILUSTRATIVA ? "Cores por setor (ilustrativo)" : "Cores da planta oficial"}
                 </p>
               )}
             </div>
@@ -667,7 +697,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
         </AnimatePresence>
       </div>
 
-      <p className="px-4 py-4 text-xs leading-relaxed text-muted sm:px-6 lg:px-10">{AVISO_PLANTA}</p>
+      <p className="px-4 py-4 text-xs leading-relaxed text-muted sm:px-6 lg:px-10">{PLANTA_ILUSTRATIVA ? AVISO_ILUSTRATIVO : AVISO_PLANTA}</p>
     </section>
   );
 }

@@ -2,6 +2,7 @@ import { MessageCircle } from "lucide-react";
 import { Botao } from "@/components/ui/Botao";
 import { EVENTO, whatsappLink } from "@/data/evento";
 import { getEstande, rotuloEstande } from "@/data/planta";
+import { PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
 
 /**
  * Exibido em produção no lugar dos formulários de demonstração:
@@ -11,7 +12,7 @@ export default function CanaisOficiais({ tipo, estandeId }: { tipo: "expositor" 
   const estande = getEstande(estandeId);
   const mensagem =
     tipo === "expositor"
-      ? `Olá, quero participar do Mega Fashion!${estande ? ` Tenho interesse no espaço ${estande.numero} (${estande.dimensao.replace("x", " × ")} m) da planta.` : ""}`
+      ? `Olá, quero participar do Mega Fashion!${estande ? ` Tenho interesse no espaço ${estande.numero} (${estande.dimensao.replace("x", " × ")} m) da planta.${PLANTA_ILUSTRATIVA ? ` Vi no ${estande.setor} da demonstração do mapa e gostaria de conhecer a planta oficial.` : ""}` : ""}`
       : "Olá! Gostaria de informações para visitar o Mega Fashion Outlet.";
 
   return (

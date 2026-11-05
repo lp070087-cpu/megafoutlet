@@ -48,3 +48,8 @@ next-env.d.ts
 
 # documento original da organização (não versionar em repositório público)
 /docs/referencias/*.pdf
+
+# planta OFICIAL (versão para aprovação, divulgação não autorizada) — somente local
+/src/data/oficial/
+/public/planta/
+/.claude/

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
@@ -6,6 +7,11 @@ import { Grupo, Item, Revelar } from "@/components/motion/Animacoes";
 import { EVENTO } from "@/data/evento";
 import { MODO_DEMO } from "@/lib/ambiente";
 import CanaisOficiais from "@/components/site/CanaisOficiais";
+
+export const metadata: Metadata = {
+  title: "Seja um expositor",
+  description: "Envie seu interesse em expor no Mega Fashion Outlet, de 20 a 24 de novembro de 2026, no Centro de Convenções de Pernambuco.",
+};
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 

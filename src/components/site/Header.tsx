@@ -15,11 +15,11 @@ import { useEffect, useRef, useState } from "react";
 import { EVENTO } from "@/data/evento";
 
 const LINKS = [
-  ["Evento", "/#evento"],
-  ["Estrutura", "/#estrutura"],
-  ["Mapa", "/mapa"],
-  ["Galeria", "/#galeria"],
-  ["Localização", "/#localizacao"],
+  ["O evento", "/#evento"],
+  ["Lojistas", "/#lojistas"],
+  ["Mapa 3D", "/#mapa"],
+  ["Atrações", "/#atracoes"],
+  ["Visitantes", "/#visitantes"],
   ["FAQ", "/#faq"],
 ] as const;
 

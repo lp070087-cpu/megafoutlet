@@ -33,9 +33,9 @@ export function Fallback2D() {
           />
         </div>
       )}
-      <p className="max-w-md text-sm leading-6 text-muted">{PLANTA_DETALHADA ? "A visualização 3D não está disponível neste navegador. Você pode consultar a planta e os espaços no mapa 2D." : "Planta sob consulta à organização. Consulte o resumo dos espaços e os canais oficiais."}</p>
+      <p className="max-w-md text-sm leading-6 text-muted">{PLANTA_DETALHADA ? "A visualização 3D não está disponível neste navegador. Você pode consultar a planta e os espaços no mapa 2D." : "A visualização 3D não está disponível neste navegador. A demonstração ilustrativa também pode ser explorada em 2D e em lista."}</p>
       <Link href="/mapa" className="inline-flex min-h-12 items-center rounded-full bg-rose px-6 text-sm font-semibold text-white hover:bg-rose-deep">
-        {PLANTA_DETALHADA ? "Abrir planta 2D →" : "Consultar resumo dos espaços →"}
+        {PLANTA_DETALHADA ? "Abrir planta 2D →" : "Abrir mapa 2D ilustrativo →"}
       </Link>
     </div>
   );

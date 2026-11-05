@@ -10,30 +10,31 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Motion �
 
 | Rota | Conteúdo |
 |---|---|
-| `/` | Landing: hero, evento, estrutura, mapa 3D interativo, galeria, localização, FAQ |
-| `/mapa` | Planta 2D interativa (zoom, busca, filtros, lista acessível, status) — `?estande=<id>` abre um espaço |
-| `/expositor` | Seja um expositor — `?estande=<id>` traz o espaço escolhido no mapa |
-| `/visitante` | Informações / confirmação de presença |
-| `/admin/*` | Painel administrativo (somente no modo demonstração) |
+| `/` | Landing: hero, contagem regressiva, evento, destaques, lojistas, estrutura e modalidades, mapa 3D, atrações, visitantes, localização, FAQ, CTA |
+| `/mapa` | Mapa interativo 3D e 2D (busca, setores, lista acessível, zoom, redefinir câmera) — `?estande=<id>` abre um espaço no 2D |
+| `/expositor` | Formulário de interesse do expositor — `?estande=<id>` traz o espaço escolhido no mapa |
+| `/visitante` | Formulário de intenção de visita |
+| `/admin/*` | Painel de demonstração (dados fictícios + cadastros deste navegador) |
 
-## Modo demonstração × produção
+## Modo demonstração (padrão)
 
-O projeto ainda **não tem backend** (banco, autenticação, antispam, LGPD). Por isso:
+Não há backend seguro (banco, autenticação, LGPD). Por isso, também no site publicado:
 
-- **Produção (padrão do `next build`)**: `/admin` responde 404; `/expositor` e `/visitante` encaminham para os canais oficiais da organização (WhatsApp com o estande escolhido na mensagem, Linktree, Instagram) e **não coletam dados pessoais**. Todos os estandes aparecem como "não confirmado".
-- **Demonstração** (`next dev`, ou build com `NEXT_PUBLIC_MODO_DEMO=1`): formulários e painel funcionam com `localStorage` **deste navegador** — não é armazenamento de produção.
+- formulários validam os campos e mostram estados de envio/sucesso/erro, mas **não enviam dados à organização**: o registro fica só no `localStorage` do navegador, com atalho para o WhatsApp oficial;
+- `/admin` é uma demonstração sem acesso a dados de outras pessoas (`noindex`).
 
-Ver `src/lib/ambiente.ts`.
+Build com `NEXT_PUBLIC_MODO_DEMO=0` desliga formulários (viram atalhos para canais oficiais) e faz `/admin` responder 404. Ver `src/lib/ambiente.ts`.
 
-## Dados e fontes
+## Planta: ilustrativa (pública) × oficial (local)
 
-- `src/data/planta.ts` — 275 espaços extraídos do PDF vetorial da planta (ALT 17, 29/10/2026, "para aprovação"), com número, dimensão e geometria. Números repetidos no PDF (229, 241, 244, 246) foram preservados e sinalizados.
-- `src/data/areas.ts` — áreas especiais, portões e circulação da planta (algumas marcadas como aproximadas).
-- `src/data/evento.ts` — informações verificadas, com fonte (Instagram oficial, Linktree, imprensa).
-- `scripts/planta/` — scripts de extração (dependem de `pdfjs-dist` e `@napi-rs/canvas`, não incluídos nas dependências do site).
-- Logo oficial recortada da planta enviada pela organização (`public/brand`).
+A planta oficial (ALT 17, "para aprovação") **não tem divulgação autorizada** e não é versionada:
 
-Disponibilidade dos espaços, preços e regras **não** foram inventados: só a organização pode informá-los.
+- `src/data/planta.ts` e `src/data/areas.ts` — **planta ilustrativa** gerada por código: 247 espaços em 4 setores fictícios + 8 módulos de alimentação + 20 de feirinha (totais do resumo agregado), posições e numeração fictícias, sempre rotuladas "Demonstração ilustrativa · não oficial".
+- `src/data/oficial/` e `public/planta/` — planta oficial, **somente local** (`.gitignore`). Usada em `next dev` ou em build com `NEXT_PUBLIC_PLANTA_DETALHADA=1` quando os arquivos existem (ver `next.config.ts`).
+- `src/data/resumo-planta.ts` — totais agregados (sem posições).
+- `src/data/evento.ts` — informações verificadas com fonte, incluindo os destaques da edição de novembro/2026.
+
+Preços, disponibilidade, patrocinadores e horários de atrações **não** foram inventados.
 
 ## Comandos
 
@@ -45,7 +46,7 @@ npm run lint
 npm run build
 npm run test:unit    # dados da planta e contrato de status
 npm run test:e2e     # Playwright contra o build de produção (desktop + mobile, inclui axe)
-E2E_DEMO=1 npm run test:e2e   # exige build com NEXT_PUBLIC_MODO_DEMO=1
+E2E_DEMO=0 npm run test:e2e   # exige build com NEXT_PUBLIC_MODO_DEMO=0
 E2E_BASE_URL=https://... npm run test:e2e   # testa uma URL publicada
 ```
 

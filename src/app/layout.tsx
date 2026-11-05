@@ -18,7 +18,7 @@ const bodoni = Bodoni_Moda({
 
 export const metadata: Metadata = {
   title: {
-    default: "Mega Fashion Outlet 2026 · Seja um expositor",
+    default: "Mega Fashion Outlet · 20 a 24 de novembro de 2026 · Olinda",
     template: "%s · Mega Fashion Outlet",
   },
   description:

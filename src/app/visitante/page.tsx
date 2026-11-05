@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import { VisitorForm } from "@/components/forms/RegistrationForm";
@@ -5,6 +6,11 @@ import { Revelar } from "@/components/motion/Animacoes";
 import { EVENTO } from "@/data/evento";
 import { MODO_DEMO } from "@/lib/ambiente";
 import CanaisOficiais from "@/components/site/CanaisOficiais";
+
+export const metadata: Metadata = {
+  title: "Visitantes",
+  description: "Programe sua visita ao Mega Fashion Outlet: 20 a 24 de novembro de 2026, das 10h às 22h, em Olinda.",
+};
 
 export default function VisitantePage() {
   return (

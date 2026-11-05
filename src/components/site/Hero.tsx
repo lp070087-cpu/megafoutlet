@@ -5,12 +5,12 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { EVENTO } from "@/data/evento";
-import { RESUMO_PLANTA } from "@/data/resumo-planta";
 import { PLANTA_DETALHADA } from "@/lib/ambiente";
+import { ESTANDES } from "@/data/planta";
+import { AREAS_ESPECIAIS, PAVILHAO } from "@/data/areas";
 import { Botao } from "@/components/ui/Botao";
 import { Contador, EASE, LinhaMascara } from "@/components/motion/Animacoes";
 
-const totalEspacos = RESUMO_PLANTA.total;
 const horasPorDia = 12; // 10h às 22h
 const dias = 5; // 20 a 24/11
 
@@ -63,7 +63,7 @@ export default function Hero() {
             {[
               { v: dias, s: "", r: "dias de evento" },
               { v: horasPorDia, s: "h", r: "por dia, 10h às 22h" },
-              { v: totalEspacos, s: "", r: "espaços na planta" },
+              { v: 300, s: "+", r: "lojas anunciadas" },
             ].map((x) => (
               <div key={x.r} className="flex flex-col-reverse pr-3">
                 <dt className="mt-1 text-xs leading-snug text-muted">{x.r}</dt>
@@ -110,11 +110,22 @@ export default function Hero() {
                   </span>
                 </>
               ) : (
-                <div className="flex h-full flex-col justify-between p-5 sm:p-7">
-                  <p className="border-b border-line pb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-deep">Mega Fashion Outlet</p>
-                  <p className="py-4 font-display text-[clamp(1.4rem,4.5vw,2.25rem)] leading-tight tracking-tight text-ink">Planta sob consulta à organização</p>
-                  <p className="border-t border-line pt-4 text-xs leading-6 text-muted">Consulte os canais oficiais.</p>
-                </div>
+                <a href="#mapa" className="group absolute inset-0 block" aria-label="Ir para o mapa interativo 3D (demonstração ilustrativa)">
+                  <motion.svg
+                    style={{ y: yPlanta, scale: escalaPlanta }}
+                    viewBox={`${PAVILHAO.x - 20} ${PAVILHAO.y - 20} ${PAVILHAO.w + 40} ${PAVILHAO.h + 40}`}
+                    preserveAspectRatio="xMidYMid slice"
+                    className="absolute inset-0 h-full w-full"
+                    aria-hidden
+                  >
+                    <rect x={PAVILHAO.x} y={PAVILHAO.y} width={PAVILHAO.w} height={PAVILHAO.h} fill="#fbf8f3" stroke="#d5cabc" strokeWidth={4} />
+                    {AREAS_ESPECIAIS.map((a) => <rect key={a.id} x={a.x} y={a.y} width={a.w} height={a.h} fill="#ebe3d8" />)}
+                    {ESTANDES.map((e) => <rect key={e.id} x={e.x + 1} y={e.y + 1} width={e.w - 2} height={e.h - 2} rx={1.5} fill={e.cor} />)}
+                  </motion.svg>
+                  <span className="absolute bottom-3 left-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur transition-colors group-hover:text-rose-deep">
+                    Mapa 3D · ilustrativo
+                  </span>
+                </a>
               )}
             </motion.div>
             {/* cartão com a logo */}

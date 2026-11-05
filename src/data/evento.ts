@@ -64,3 +64,23 @@ export const AVISO_PLANTA =
 
 export const whatsappLink = (numero: string, texto = "Olá, quero participar do Mega Fashion!") =>
   `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+
+/**
+ * Destaques da edição de novembro/2026, conforme a comunicação do evento repassada pela
+ * organização à Unitrix (briefing de 05/11/2026). "Mais de 300 lojas" refere-se a lojas
+ * anunciadas na comunicação — NÃO é o número de estandes da planta.
+ * Horários e programação detalhada: somente pela organização.
+ */
+export const DESTAQUES_EDICAO = {
+  lojas: { valor: 300, rotulo: "lojas anunciadas", prefixo: "+" },
+  atracoes: [
+    { id: "ofertas", titulo: "Ofertas e promoções", texto: "Moda, beleza, artesanato e serviços com condições de outlet durante os cinco dias." },
+    { id: "shows", titulo: "Shows e atrações gratuitas", texto: "Programação de palco aberta ao público ao longo do evento." },
+    { id: "anos80", titulo: "Baile e concurso de dança anos 80", texto: "Uma noite temática com concurso de dança inspirado na década." },
+    { id: "pagode", titulo: "Pagode", texto: "Roda de pagode na programação musical da edição." },
+    { id: "saude", titulo: "Mega Saúde", texto: "Espaço dedicado a cuidados e bem-estar para os visitantes." },
+    { id: "pet", titulo: "Desfile pet", texto: "Os pets também entram na passarela do Mega." },
+    { id: "kids", titulo: "Espaço Kids gratuito", texto: "Área para as crianças enquanto a família aproveita a feira." },
+    { id: "alimentacao", titulo: "Praça de alimentação", texto: "Pausa para comer e encontrar os amigos sem sair do evento." },
+  ],
+} as const;

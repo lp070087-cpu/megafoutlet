@@ -12,6 +12,7 @@ import { GRUPOS_STATUS } from "@/lib/types";
 import { useStatusEstandes } from "@/lib/useStatusEstandes";
 import { ALTURA_ESTANDE, CORES_AREAS, DIAGONAL, PISO, ponto, volume, type ComandoCamera } from "./geometria";
 import { Fallback2D } from "./EstadosCena";
+import { PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
 
 interface Props {
   selecionado: string | null;
@@ -65,7 +66,7 @@ function Pavilhao() {
               <meshStandardMaterial color={CORES_AREAS[area.tipo]} roughness={0.9} />
             </mesh>
             <Etiqueta x={rect.x} y={altura + 0.2} z={rect.z}>
-              {area.nome}{area.precisao === "aproximada" ? " · aprox." : ""}
+              {area.nome}{area.precisao === "aproximada" && !PLANTA_ILUSTRATIVA ? " · aprox." : ""}
             </Etiqueta>
           </group>
         );
@@ -118,7 +119,8 @@ function Estandes({ selecionado, coresPlanta, onSelecionar }: Omit<Props, "coman
     ESTANDES.forEach((estande, index) => {
       const rect = volume(estande);
       dummy.position.set(rect.x, ALTURA_ESTANDE / 2 + (selecionado === estande.id ? 0.25 : 0), rect.z);
-      dummy.scale.set(rect.largura, ALTURA_ESTANDE, rect.profundidade);
+      // pequena folga para cada estande ser lido como uma unidade
+      dummy.scale.set(Math.max(0.2, rect.largura - 0.18), ALTURA_ESTANDE, Math.max(0.2, rect.profundidade - 0.18));
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
     });
@@ -215,10 +217,13 @@ function Camera({ comando, onFalha }: Pick<Props, "comando" | "onFalha">) {
     const controls = ref.current;
     const start = camera.position.clone();
     const startTarget = controls.target.clone();
-    const target = comando.tipo === "geral" ? new Vector3() : startTarget.clone();
+    const foco = comando.tipo === "focar" ? comando.alvo : undefined;
+    const target = comando.tipo === "geral" ? new Vector3() : foco ? new Vector3(foco.x, 0, foco.z) : startTarget.clone();
     const fit = Math.max(PISO.profundidade, PISO.largura / Math.max(0.3, size.width / size.height)) / (2 * Math.tan(42 * Math.PI / 360)) * 1.2;
     const offset = start.clone().sub(startTarget);
-    const distance = Math.min(DIAGONAL * 3, Math.max(5, offset.length() * (comando.tipo === "ampliar" ? 0.72 : 1.38)));
+    const distance = foco
+      ? Math.min(DIAGONAL * 1.5, Math.max(9, foco.raio * 2.6))
+      : Math.min(DIAGONAL * 3, Math.max(5, offset.length() * (comando.tipo === "ampliar" ? 0.72 : 1.38)));
     const end = comando.tipo === "geral"
       ? new Vector3(0.65, 1, 1).normalize().multiplyScalar(fit)
       : target.clone().add(offset.normalize().multiplyScalar(distance));

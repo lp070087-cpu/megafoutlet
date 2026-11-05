@@ -43,6 +43,18 @@ export const CORES_AREAS: Record<TipoArea, string> = {
 };
 
 export interface ComandoCamera {
-  tipo: "geral" | "ampliar" | "reduzir";
+  tipo: "geral" | "ampliar" | "reduzir" | "focar";
   sequencia: number;
+  /** Para "focar": centro (em metros, coordenadas da cena) e raio aproximado do enquadramento. */
+  alvo?: { x: number; z: number; raio: number };
+}
+
+/** Enquadramento de um conjunto de retângulos da planta (estande, setor) para a câmera 3D. */
+export function enquadramento(rects: { x: number; y: number; w: number; h: number }[]) {
+  const x0 = Math.min(...rects.map(r => r.x));
+  const y0 = Math.min(...rects.map(r => r.y));
+  const x1 = Math.max(...rects.map(r => r.x + r.w));
+  const y1 = Math.max(...rects.map(r => r.y + r.h));
+  const [x, z] = ponto((x0 + x1) / 2, (y0 + y1) / 2);
+  return { x, z, raio: Math.max(4, Math.hypot(x1 - x0, y1 - y0) / PT_POR_METRO / 2) };
 }

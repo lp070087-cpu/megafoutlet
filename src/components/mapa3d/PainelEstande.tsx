@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "motion/react";
 import type { Estande } from "@/data/planta";
 import { GRUPOS_STATUS, STATUS_ESTANDE, STATUS_ESTANDE_ROTULO, type GrupoStatus, type StatusEstande } from "@/lib/types";
 import { dimensoes } from "./geometria";
+import { PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
 import { LimiteCena } from "./EstadosCena";
 
 const Miniatura = dynamic(() => import("./MiniaturaEstande"), {
@@ -48,7 +49,7 @@ export function PainelEstande({ estande, status, grupo, modoAdmin, onFechar, onS
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.18em] text-muted">{estande.id}</p>
-          <h4 id={`${id}-titulo`} className="mt-1 font-display text-3xl">Estande {estande.numero}</h4>
+          <h4 id={`${id}-titulo`} className="mt-1 font-display text-3xl">{PLANTA_ILUSTRATIVA ? "Espaço" : "Estande"} {estande.numero}</h4>
         </div>
         <button type="button" onClick={onFechar} aria-label="Fechar detalhes do estande" className="min-h-11 min-w-11 rounded-full border border-line text-lg">×</button>
       </div>
@@ -69,7 +70,7 @@ export function PainelEstande({ estande, status, grupo, modoAdmin, onFechar, onS
       <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 text-xs">
         <div><dt className="text-muted">Largura</dt><dd className="mt-1 font-semibold">{label(medidas.largura)}</dd></div>
         <div><dt className="text-muted">Profundidade</dt><dd className="mt-1 font-semibold">{label(medidas.profundidade)}</dd></div>
-        <div className="col-span-2"><dt className="text-muted">Dimensões conforme a planta</dt><dd className="mt-1">{estande.dimensao.replace("x", " × ")} m</dd></div>
+        <div className="col-span-2"><dt className="text-muted">{PLANTA_ILUSTRATIVA ? "Formato (ilustrativo)" : "Dimensões conforme a planta"}</dt><dd className="mt-1">{estande.dimensao.replace("x", " × ")} m</dd></div>
         <div><dt className="text-muted">Área</dt><dd className="mt-1 font-semibold">{estande.areaM2 === null ? "Não informada" : `${estande.areaM2.toLocaleString("pt-BR")} m²`}</dd></div>
         <div><dt className="text-muted">Localização</dt><dd className="mt-1 leading-5">{estande.setor}</dd></div>
       </dl>
@@ -95,7 +96,7 @@ export function PainelEstande({ estande, status, grupo, modoAdmin, onFechar, onS
         <p className="mt-5 rounded-xl bg-sand p-3 text-xs leading-6">Este espaço está ocupado. Explore outros estandes ou consulte a organização.</p>
       ) : (
         <Link href={`/expositor?estande=${encodeURIComponent(estande.id)}`} className="mt-5 flex min-h-12 items-center justify-center rounded-full bg-rose px-4 py-3 text-center text-xs font-semibold text-white hover:bg-rose-deep">
-          Tenho interesse neste estande ↗
+          {PLANTA_ILUSTRATIVA ? "Quero expor neste setor ↗" : "Tenho interesse neste estande ↗"}
         </Link>
       )}
       <p className="mt-3 text-[11px] leading-5 text-muted">Demonstrar interesse não reserva nem compra um estande. Confirmação exclusiva da organização.</p>

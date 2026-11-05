@@ -1,27 +1,30 @@
 /**
- * Modo demonstração: formulários gravam no localStorage, painel /admin sem autenticação real,
- * status de estandes editáveis localmente. NÃO é seguro para dados reais.
+ * MODO DEMONSTRAÇÃO (padrão, inclusive no site publicado).
  *
- * - Desenvolvimento (`next dev`): ativo.
- * - Produção: DESATIVADO por padrão. Só ativa com NEXT_PUBLIC_MODO_DEMO=1 no build
- *   (usado apenas em testes automatizados locais).
+ * Ainda não existe backend seguro (banco, autenticação, LGPD). Por isso:
+ * - formulários validam os campos, mas NÃO enviam dados à organização: o cadastro fica somente
+ *   neste navegador (localStorage) e o visitante pode encaminhar a mensagem pelo WhatsApp oficial;
+ * - o painel /admin é uma demonstração com dados fictícios e os cadastros deste navegador —
+ *   não há acesso a dados de outras pessoas.
  *
- * Com o modo desativado, /admin responde 404 e /expositor e /visitante direcionam
- * para os canais oficiais da organização, sem coletar dados pessoais.
+ * Para desligar (formulários viram atalhos para os canais oficiais e /admin responde 404),
+ * faça o build com NEXT_PUBLIC_MODO_DEMO=0.
  */
-export const MODO_DEMO = process.env.NEXT_PUBLIC_MODO_DEMO === "1" || process.env.NODE_ENV !== "production";
+export const MODO_DEMO = process.env.NEXT_PUBLIC_MODO_DEMO !== "0";
 
 /**
- * Planta detalhada (imagem oficial, numeração, coordenadas e dimensões por estande, mapa 2D/3D).
+ * Planta OFICIAL (numeração, coordenadas e dimensões por estande, imagem da planta).
  *
- * A divulgação pública da planta ainda não foi autorizada pela organização. Por isso:
- * - Desenvolvimento (`next dev`): ativa.
- * - Produção: DESATIVADA por padrão. Só ativa com NEXT_PUBLIC_PLANTA_DETALHADA=1 no build
- *   (ambientes protegidos: preview com autenticação da Vercel, testes locais).
+ * A divulgação pública da planta ainda não foi autorizada pela organização. Ela fica fora do
+ * Git (src/data/oficial/) e só é usada quando existe localmente e o build é de desenvolvimento
+ * ou tem NEXT_PUBLIC_PLANTA_DETALHADA=1 (calculado em next.config.ts).
  *
- * Desativada, o build substitui `@/data/planta` e `@/data/areas` por módulos vazios
- * (ver next.config.ts), bloqueia `/planta/*` (src/proxy.ts) e exibe somente o resumo agregado
- * de `@/data/resumo-planta`, sem posições nem numeração.
+ * Sem ela, o site usa a PLANTA ILUSTRATIVA (src/data/planta.ts): mesma experiência 2D/3D,
+ * claramente identificada como demonstração não oficial.
  */
-export const PLANTA_DETALHADA =
-  process.env.NEXT_PUBLIC_PLANTA_DETALHADA === "1" || process.env.NODE_ENV !== "production";
+export const PLANTA_DETALHADA = process.env.NEXT_PUBLIC_PLANTA_OFICIAL === "1";
+export const PLANTA_ILUSTRATIVA = !PLANTA_DETALHADA;
+
+/** Aviso exibido junto a qualquer visualização da planta ilustrativa. */
+export const AVISO_ILUSTRATIVO =
+  "Demonstração ilustrativa, não oficial: posições, numeração e formatos são fictícios. A planta oficial e a disponibilidade dos espaços são informadas exclusivamente pela organização.";

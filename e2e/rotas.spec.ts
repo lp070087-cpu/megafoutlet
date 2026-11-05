@@ -2,8 +2,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-const DEMO = process.env.E2E_DEMO === "1";
-const ROTAS = ["/", "/mapa", "/expositor", "/expositor?estande=E-142", "/visitante"];
+const DEMO = process.env.E2E_DEMO !== "0";
+const ROTAS = ["/", "/mapa", "/expositor", "/expositor?estande=A-12", "/visitante", "/admin"];
 
 function capturarErros(page: Page) {
   const erros: string[] = [];
@@ -46,7 +46,7 @@ test("links internos da home respondem 200", async ({ page, request }) => {
   }
 });
 
-test("/admin: indisponível no build público, disponível só em demonstração", async ({ request }) => {
+test("/admin: disponível só no modo demonstração", async ({ request }) => {
   for (const r of ["/admin", "/admin/lojistas", "/admin/visitantes", "/admin/estandes"]) {
     const resp = await request.get(r);
     expect(resp.status(), r).toBe(DEMO ? 200 : 404);

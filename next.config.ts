@@ -1,17 +1,21 @@
+import { existsSync } from "node:fs";
 import type { NextConfig } from "next";
 
 /**
- * Planta detalhada: ver src/lib/ambiente.ts. No build público, os módulos com a planta
- * (numeração, dimensões e coordenadas) são trocados por versões vazias e o otimizador de
- * imagens só aceita a pasta da marca, para que nada da planta oficial seja publicado.
+ * Planta: ver src/lib/ambiente.ts.
+ * O repositório contém somente a planta ILUSTRATIVA (src/data/planta.ts e areas.ts).
+ * A planta oficial fica em src/data/oficial/ (fora do Git) e só entra no build quando o arquivo
+ * existe E (desenvolvimento local OU NEXT_PUBLIC_PLANTA_DETALHADA=1).
  */
-const plantaDetalhada =
-  process.env.NEXT_PUBLIC_PLANTA_DETALHADA === "1" || process.env.NODE_ENV !== "production";
+const oficialDisponivel = existsSync("./src/data/oficial/planta.ts") && existsSync("./src/data/oficial/areas.ts");
+const plantaOficial =
+  oficialDisponivel && (process.env.NEXT_PUBLIC_PLANTA_DETALHADA === "1" || process.env.NODE_ENV !== "production");
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
-  images: plantaDetalhada ? undefined : { localPatterns: [{ pathname: "/brand/**" }] },
+  env: { NEXT_PUBLIC_PLANTA_OFICIAL: plantaOficial ? "1" : "0" },
+  images: plantaOficial ? undefined : { localPatterns: [{ pathname: "/brand/**" }] },
   turbopack: {
     rules: {
       "*.css": {
@@ -19,12 +23,12 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
-    resolveAlias: plantaDetalhada
-      ? {}
-      : {
-          "@/data/planta": "./src/data/publico/planta.ts",
-          "@/data/areas": "./src/data/publico/areas.ts",
-        },
+    resolveAlias: plantaOficial
+      ? {
+          "@/data/planta": "./src/data/oficial/planta.ts",
+          "@/data/areas": "./src/data/oficial/areas.ts",
+        }
+      : {},
   },
 };
 
