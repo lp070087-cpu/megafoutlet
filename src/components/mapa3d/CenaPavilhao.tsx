@@ -1,20 +1,22 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Html, OrbitControls } from "@react-three/drei";
-import { Color, InstancedMesh, Object3D, TOUCH, Vector3 } from "three";
+import { Color, OrthographicCamera, TOUCH, Vector3 } from "three";
 import type { OrbitControls as ControleOrbit } from "three-stdlib";
 import { useReducedMotion } from "motion/react";
 import { ACESSOS, AREAS_ESPECIAIS, RUAS } from "@/data/areas";
 import { ESTANDES, type Estande } from "@/data/planta";
 import { GRUPOS_STATUS } from "@/lib/types";
 import { useStatusEstandes } from "@/lib/useStatusEstandes";
-import { ALTURA_ESTANDE, CORES_AREAS, DIAGONAL, PISO, ponto, volume, type ComandoCamera } from "./geometria";
+import { CORES_AREAS, DIAGONAL, PISO, ponto, volume, type ComandoCamera } from "./geometria";
 import { Fallback2D } from "./EstadosCena";
+import { Edificio, ModulosArquitetonicos, MobiliarioComum } from "./Arquitetura";
 import { PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
 
 interface Props {
+  visiveis: Set<string>;
   selecionado: string | null;
   coresPlanta: boolean;
   comando: ComandoCamera;
@@ -22,14 +24,17 @@ interface Props {
   onFalha: () => void;
 }
 
-function Etiqueta({ children, x, y, z }: {
+type PortalEtiquetas = RefObject<HTMLDivElement>;
+
+function Etiqueta({ children, x, y, z, portal }: {
   children: React.ReactNode;
   x: number;
   y: number;
   z: number;
+  portal: PortalEtiquetas;
 }) {
   return (
-    <Html center position={[x, y, z]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
+    <Html center portal={portal} position={[x, y, z]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
       <span className="block max-w-32 rounded bg-ivory/90 px-1.5 py-1 text-center text-[9px] leading-tight text-graphite">
         {children}
       </span>
@@ -37,37 +42,26 @@ function Etiqueta({ children, x, y, z }: {
   );
 }
 
-function Pavilhao() {
+function Pavilhao({ portal }: { portal: PortalEtiquetas }) {
+  const compacto = useThree(state => state.size.width < 560);
   return (
     <>
-      <mesh position={[0, -0.13, 0]}>
-        <boxGeometry args={[PISO.largura, 0.25, PISO.profundidade]} />
-        <meshStandardMaterial color="#efe8de" roughness={1} />
-      </mesh>
-      {[-1, 1].map(side => (
-        <group key={side}>
-          <mesh position={[side * PISO.largura / 2, 0.25, 0]}>
-            <boxGeometry args={[0.18, 0.5, PISO.profundidade]} />
-            <meshStandardMaterial color="#d5cabc" />
-          </mesh>
-          <mesh position={[0, 0.25, side * PISO.profundidade / 2]}>
-            <boxGeometry args={[PISO.largura, 0.5, 0.18]} />
-            <meshStandardMaterial color="#d5cabc" />
-          </mesh>
-        </group>
-      ))}
+      <Edificio />
+      <MobiliarioComum />
       {AREAS_ESPECIAIS.map(area => {
         const rect = volume(area);
         const altura = area.tipo === "palco" ? 0.6 : 0.35;
         return (
           <group key={area.id}>
-            <mesh position={[rect.x, altura / 2, rect.z]}>
+            <mesh receiveShadow position={[rect.x, altura / 2, rect.z]}>
               <boxGeometry args={[rect.largura, altura, rect.profundidade]} />
               <meshStandardMaterial color={CORES_AREAS[area.tipo]} roughness={0.9} />
             </mesh>
-            <Etiqueta x={rect.x} y={altura + 0.2} z={rect.z}>
-              {area.nome}{area.precisao === "aproximada" && !PLANTA_ILUSTRATIVA ? " · aprox." : ""}
-            </Etiqueta>
+            {!compacto && (
+              <Etiqueta portal={portal} x={rect.x} y={altura + 0.2} z={rect.z}>
+                {area.nome}{area.precisao === "aproximada" && !PLANTA_ILUSTRATIVA ? " · aprox." : ""}
+              </Etiqueta>
+            )}
           </group>
         );
       })}
@@ -80,7 +74,7 @@ function Pavilhao() {
               <cylinderGeometry args={[0.28, 0.28, 1.4, 8]} />
               <meshStandardMaterial color={color} />
             </mesh>
-            <Etiqueta x={x} y={2.2} z={z}>{acesso.rotulo}</Etiqueta>
+            <Etiqueta portal={portal} x={x} y={2.2} z={z}>{acesso.rotulo}</Etiqueta>
           </group>
         );
       })}
@@ -89,6 +83,7 @@ function Pavilhao() {
         return (
           <Html
             key={index}
+            portal={portal}
             transform
             center
             rotation={[-Math.PI / 2, 0, 0]}
@@ -105,78 +100,26 @@ function Pavilhao() {
   );
 }
 
-function Estandes({ selecionado, coresPlanta, onSelecionar }: Omit<Props, "comando" | "onFalha">) {
-  const ref = useRef<InstancedMesh>(null);
+function Estandes({ visiveis, selecionado, coresPlanta, onSelecionar, portal }: Omit<Props, "comando" | "onFalha"> & { portal: PortalEtiquetas }) {
   const [hover, setHover] = useState<number | null>(null);
   const { grupoDe } = useStatusEstandes();
-  const { invalidate } = useThree();
-  const dummy = useMemo(() => new Object3D(), []);
-  const color = useMemo(() => new Color(), []);
-
-  useLayoutEffect(() => {
-    const mesh = ref.current;
-    if (!mesh) return;
-    ESTANDES.forEach((estande, index) => {
-      const rect = volume(estande);
-      dummy.position.set(rect.x, ALTURA_ESTANDE / 2 + (selecionado === estande.id ? 0.25 : 0), rect.z);
-      // pequena folga para cada estande ser lido como uma unidade
-      dummy.scale.set(Math.max(0.2, rect.largura - 0.18), ALTURA_ESTANDE, Math.max(0.2, rect.profundidade - 0.18));
-      dummy.updateMatrix();
-      mesh.setMatrixAt(index, dummy.matrix);
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    mesh.computeBoundingSphere();
-    invalidate();
-  }, [selecionado, dummy, invalidate]);
-
-  useLayoutEffect(() => {
-    const mesh = ref.current;
-    if (!mesh) return;
-    ESTANDES.forEach((estande, index) => {
-      const grupo = GRUPOS_STATUS.find(item => item.id === grupoDe(estande.id));
-      color.set(selecionado === estande.id ? "#c34f66" : coresPlanta ? estande.cor : grupo?.cor ?? "#a7a29b");
-      if (hover === index && selecionado !== estande.id) color.lerp(new Color("#ffffff"), 0.35);
-      mesh.setColorAt(index, color);
-    });
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    invalidate();
-  }, [grupoDe, coresPlanta, selecionado, hover, color, invalidate]);
-
+  const corDe = useCallback((e: Estande, index: number) => {
+    const grupo = GRUPOS_STATUS.find(item => item.id === grupoDe(e.id));
+    const cor = new Color(selecionado === e.id ? "#c34f66" : coresPlanta ? e.cor : grupo?.cor ?? "#a7a29b");
+    if (hover === index && selecionado !== e.id) cor.lerp(new Color("#ffffff"), 0.28);
+    return "#" + cor.getHexString();
+  }, [grupoDe, coresPlanta, selecionado, hover]);
   useEffect(() => {
-    // padrão R3F: cursor aplicado ao documento enquanto aponta um estande
     document.body.style.cursor = hover === null ? "" : "pointer";
     return () => { document.body.style.cursor = ""; };
   }, [hover]);
-
-  function select(event: ThreeEvent<MouseEvent>) {
-    if (event.instanceId === undefined || event.delta > 4) return;
-    event.stopPropagation();
-    onSelecionar(ESTANDES[event.instanceId]);
-  }
-  const labels = ESTANDES.filter((item, index) => item.id === selecionado || index === hover);
-
-  return (
-    <>
-      <instancedMesh
-        ref={ref}
-        args={[undefined, undefined, ESTANDES.length]}
-        onClick={select}
-        onPointerMove={event => { event.stopPropagation(); setHover(event.instanceId ?? null); }}
-        onPointerOut={() => setHover(null)}
-      >
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial roughness={0.78} metalness={0} />
-      </instancedMesh>
-      {labels.map(estande => {
-        const rect = volume(estande);
-        return (
-          <Etiqueta key={estande.id} x={rect.x} y={2.1} z={rect.z}>
-            <strong>{estande.numero}</strong> · {estande.id}
-          </Etiqueta>
-        );
-      })}
-    </>
-  );
+  return <>
+    <ModulosArquitetonicos visiveis={visiveis} corDe={corDe} onSelecionar={onSelecionar} onHover={setHover} />
+    {ESTANDES.filter((e,i) => visiveis.has(e.id) && (e.id === selecionado || i === hover)).map(e => {
+      const r = volume(e);
+      return <Etiqueta key={e.id} portal={portal} x={r.x} y={3.25} z={r.z}><strong>{e.numero}</strong> · {e.dimensao.replace("x", " × ")} m</Etiqueta>;
+    })}
+  </>;
 }
 
 /** Mantém o alvo dentro do pavilhão e a câmera acima do piso (mutação imperativa do three.js). */
@@ -188,6 +131,27 @@ function limitarCamera(controle: ControleOrbit | null, camera: { position: Vecto
     alvo.y = 0;
   }
   camera.position.y = Math.max(1.8, camera.position.y);
+}
+
+function ajustarVista(camera: OrthographicCamera) {
+  camera.position.set(150, 200, 48);
+  camera.lookAt(0, 0, 0); camera.updateMatrixWorld();
+  camera.zoom = 1; camera.updateProjectionMatrix();
+  let maxX = 0, maxY = 0;
+  for (const x of [-PISO.largura / 2, PISO.largura / 2]) for (const z of [-PISO.profundidade / 2, PISO.profundidade / 2]) for (const y of [-1.1, 3.6]) {
+    const p = new Vector3(x,y,z).project(camera);
+    maxX = Math.max(maxX, Math.abs(p.x)); maxY = Math.max(maxY, Math.abs(p.y));
+  }
+  // Frustum follows viewport pixels; preserve a margin on narrow screens too.
+  camera.zoom = 0.9 / Math.max(maxX, maxY);
+  camera.updateProjectionMatrix();
+  return { position: camera.position.clone(), zoom: camera.zoom };
+}
+
+/** A câmera é um objeto externo do Three, atualizado imperativamente pelo controle. */
+function atualizarZoom(camera: OrthographicCamera, zoom: number) {
+  camera.zoom = zoom;
+  camera.updateProjectionMatrix();
 }
 
 function Camera({ comando, onFalha }: Pick<Props, "comando" | "onFalha">) {
@@ -204,8 +168,8 @@ function Camera({ comando, onFalha }: Pick<Props, "comando" | "onFalha">) {
   }, [gl, onFalha]);
 
   useLayoutEffect(() => {
-    const distance = Math.max(PISO.profundidade, PISO.largura / Math.max(0.3, size.width / size.height)) / (2 * Math.tan(42 * Math.PI / 360)) * 1.2;
-    camera.position.copy(new Vector3(0.65, 1, 1).normalize().multiplyScalar(distance));
+    if (!(camera instanceof OrthographicCamera)) return;
+    ajustarVista(camera);
     camera.lookAt(0, 0, 0);
     ref.current?.target.set(0, 0, 0);
     ref.current?.update();
@@ -215,23 +179,31 @@ function Camera({ comando, onFalha }: Pick<Props, "comando" | "onFalha">) {
   useEffect(() => {
     if (comando.sequencia === 0 || !ref.current) return;
     const controls = ref.current;
+    if (!(camera instanceof OrthographicCamera)) return;
+    const startZoom = camera.zoom;
     const start = camera.position.clone();
     const startTarget = controls.target.clone();
     const foco = comando.tipo === "focar" ? comando.alvo : undefined;
     const target = comando.tipo === "geral" ? new Vector3() : foco ? new Vector3(foco.x, 0, foco.z) : startTarget.clone();
-    const fit = Math.max(PISO.profundidade, PISO.largura / Math.max(0.3, size.width / size.height)) / (2 * Math.tan(42 * Math.PI / 360)) * 1.2;
+    const fitted = ajustarVista(camera.clone());
+    const endZoom = comando.tipo === "geral" ? fitted.zoom : foco
+      ? Math.min(35, Math.min(size.width, size.height) / (foco.raio * 2.6))
+      : comando.tipo === "ampliar" ? Math.min(45, startZoom * 1.38)
+      : comando.tipo === "reduzir" ? Math.max(0.5, startZoom * 0.72) : startZoom;
     const offset = start.clone().sub(startTarget);
-    const distance = foco
-      ? Math.min(DIAGONAL * 1.5, Math.max(9, foco.raio * 2.6))
-      : Math.min(DIAGONAL * 3, Math.max(5, offset.length() * (comando.tipo === "ampliar" ? 0.72 : 1.38)));
-    const end = comando.tipo === "geral"
-      ? new Vector3(0.65, 1, 1).normalize().multiplyScalar(fit)
+    // Zoom ortográfico preserva a distância segura das paredes.
+    const distance = Math.max(DIAGONAL, offset.length());
+    const end = comando.tipo === "superior"
+      ? target.clone().add(new Vector3(0, Math.max(9, offset.length()), 0.01))
+      : comando.tipo === "geral"
+      ? fitted.position
       : target.clone().add(offset.normalize().multiplyScalar(distance));
     const began = performance.now();
     function tick(now: number) {
       const progress = reduced ? 1 : Math.min(1, (now - began) / 550);
       const eased = 1 - Math.pow(1 - progress, 3);
       camera.position.lerpVectors(start, end, eased);
+      atualizarZoom(camera as OrthographicCamera, startZoom + (endZoom - startZoom) * eased);
       controls.target.lerpVectors(startTarget, target, eased);
       controls.update();
       invalidate();
@@ -247,6 +219,8 @@ function Camera({ comando, onFalha }: Pick<Props, "comando" | "onFalha">) {
       makeDefault
       enableDamping={!reduced}
       dampingFactor={0.12}
+      minZoom={0.5}
+      maxZoom={45}
       minDistance={5}
       maxDistance={DIAGONAL * 3}
       minPolarAngle={0.12}
@@ -260,21 +234,39 @@ function Camera({ comando, onFalha }: Pick<Props, "comando" | "onFalha">) {
 }
 
 export default function CenaPavilhao(props: Props) {
+  const portal = useRef<HTMLDivElement>(null!);
   return (
-    <Canvas
-      frameloop="demand"
-      dpr={[1, 1.75]}
-      camera={{ position: [80, 120, 120], fov: 42, near: 0.1, far: DIAGONAL * 6 }}
-      gl={{ antialias: true, alpha: false, powerPreference: "low-power" }}
-      fallback={<Fallback2D />}
-      style={{ touchAction: "none" }}
-    >
-      <color attach="background" args={["#faf7f2"]} />
-      <ambientLight intensity={1.5} />
-      <directionalLight position={[30, 70, 30]} intensity={2} />
-      <Pavilhao />
-      <Estandes selecionado={props.selecionado} coresPlanta={props.coresPlanta} onSelecionar={props.onSelecionar} />
-      <Camera comando={props.comando} onFalha={props.onFalha} />
-    </Canvas>
+    <div className="relative h-full">
+      <div ref={portal} className="pointer-events-none absolute inset-0 z-10 overflow-hidden" />
+      <Canvas
+        orthographic
+        shadows="soft"
+        frameloop="demand"
+        dpr={[1, 1.75]}
+        camera={{ position: [150, 200, 48], zoom: 4, near: 0.1, far: DIAGONAL * 6 }}
+        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+        onCreated={({ gl }) => { gl.domElement.dataset.mapVersion = "arquitetura-v2"; }}
+        fallback={<Fallback2D />}
+        style={{ touchAction: "none" }}
+      >
+        <color attach="background" args={["#f4f6f8"]} />
+        <hemisphereLight args={["#ffffff", "#a8b3c4", 1.5]} />
+        <ambientLight intensity={0.35} />
+        <directionalLight
+          castShadow position={[-40, 90, 35]} intensity={2.6}
+          shadow-mapSize={[2048, 2048]} shadow-radius={4} shadow-bias={-0.001} shadow-normalBias={0.08}
+          shadow-camera-left={-DIAGONAL / 2} shadow-camera-right={DIAGONAL / 2}
+          shadow-camera-top={DIAGONAL / 2} shadow-camera-bottom={-DIAGONAL / 2}
+          shadow-camera-far={DIAGONAL * 3}
+        />
+        <Pavilhao portal={portal} />
+        <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.12, 0]}>
+          <planeGeometry args={[PISO.largura * 1.6, PISO.profundidade * 1.6]} />
+          <meshStandardMaterial color="#f4f6f8" roughness={1} />
+        </mesh>
+        <Estandes portal={portal} visiveis={props.visiveis} selecionado={props.selecionado} coresPlanta={props.coresPlanta} onSelecionar={props.onSelecionar} />
+        <Camera comando={props.comando} onFalha={props.onFalha} />
+      </Canvas>
+    </div>
   );
 }

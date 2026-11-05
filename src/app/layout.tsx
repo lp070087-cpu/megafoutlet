@@ -1,18 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Bodoni_Moda, Manrope } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import SmoothScroll from "@/components/motion/SmoothScroll";
 
-const manrope = Manrope({
+const manrope = localFont({
+  src: "./fonts/manrope-latin.woff2",
+  weight: "200 800",
   variable: "--font-manrope",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const bodoni = Bodoni_Moda({
+const bodoni = localFont({
+  src: [
+    { path: "./fonts/bodoni-moda-latin.woff2", weight: "400 900", style: "normal" },
+    { path: "./fonts/bodoni-moda-latin-italic.woff2", weight: "400 900", style: "italic" },
+  ],
   variable: "--font-bodoni",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
   display: "swap",
 });
 

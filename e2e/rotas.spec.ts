@@ -3,7 +3,8 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 const DEMO = process.env.E2E_DEMO !== "0";
-const ROTAS = ["/", "/mapa", "/expositor", "/expositor?estande=A-12", "/visitante", "/admin"];
+const ADMIN = ["/admin", "/admin/lojistas", "/admin/visitantes", "/admin/estandes"];
+const ROTAS = ["/", "/mapa", "/expositor", "/expositor?estande=A-12", "/visitante", ...(DEMO ? ADMIN : [])];
 
 function capturarErros(page: Page) {
   const erros: string[] = [];
@@ -47,10 +48,16 @@ test("links internos da home respondem 200", async ({ page, request }) => {
 });
 
 test("/admin: disponível só no modo demonstração", async ({ request }) => {
-  for (const r of ["/admin", "/admin/lojistas", "/admin/visitantes", "/admin/estandes"]) {
+  for (const r of ADMIN) {
     const resp = await request.get(r);
     expect(resp.status(), r).toBe(DEMO ? 200 : 404);
   }
+});
+
+test("servidor público bloqueia o caminho reservado à planta privada", async ({ request }) => {
+  const resp = await request.get("/planta/planta-oficial.webp");
+  expect(resp.status()).toBe(404);
+  expect(resp.headers()["cache-control"]).toContain("no-store");
 });
 
 test("rota inexistente responde 404", async ({ request }) => {

@@ -7,17 +7,20 @@
  * - o painel /admin é uma demonstração com dados fictícios e os cadastros deste navegador —
  *   não há acesso a dados de outras pessoas.
  *
- * Para desligar (formulários viram atalhos para os canais oficiais e /admin responde 404),
+ * Para usar somente os canais oficiais nos formulários e desativar a demonstração,
  * faça o build com NEXT_PUBLIC_MODO_DEMO=0.
  */
 export const MODO_DEMO = process.env.NEXT_PUBLIC_MODO_DEMO !== "0";
 
+export const ADMIN_DEMO = MODO_DEMO && process.env.VERCEL !== "1" &&
+  (process.env.NODE_ENV === "development" || process.env.MEGA_ADMIN_DEMO_LOCAL === "1");
+
 /**
  * Planta OFICIAL (numeração, coordenadas e dimensões por estande, imagem da planta).
  *
- * A divulgação pública da planta ainda não foi autorizada pela organização. Ela fica fora do
- * Git (src/data/oficial/) e só é usada quando existe localmente e o build é de desenvolvimento
- * ou tem NEXT_PUBLIC_PLANTA_DETALHADA=1 (calculado em next.config.ts).
+ * A divulgação pública da planta ainda não foi autorizada pela organização.
+ * O build desta aplicação mantém a planta ilustrativa. Os dados oficiais ficam
+ * na ferramenta privada separada, conforme a proteção em next.config.ts.
  *
  * Sem ela, o site usa a PLANTA ILUSTRATIVA (src/data/planta.ts): mesma experiência 2D/3D,
  * claramente identificada como demonstração não oficial.

@@ -92,17 +92,18 @@ export type StatusEstande = (typeof STATUS_ESTANDE)[number];
  * Cinza = não confirmado · Verde = disponível · Amarelo = em análise/reserva provisória · Vermelho = ocupado.
  * Fonte ÚNICA de rótulos e cores — use em mapa, 3D e admin.
  */
-export type GrupoStatus = "nao_confirmado" | "disponivel" | "em_analise" | "ocupado";
+export type GrupoStatus = "nao_confirmado" | "disponivel" | "em_analise" | "reservado" | "ocupado";
 export const GRUPO_DO_STATUS: Record<StatusEstande, GrupoStatus> = {
   sem_informacao: "nao_confirmado",
   disponivel: "disponivel",
   em_negociacao: "em_analise",
-  reservado: "em_analise",
+  reservado: "reservado",
   vendido: "ocupado",
 };
 export const GRUPOS_STATUS: { id: GrupoStatus; rotulo: string; cor: string; corTexto: string }[] = [
   { id: "disponivel", rotulo: "Disponível", cor: "#3f9b6b", corTexto: "#24603f" },
-  { id: "em_analise", rotulo: "Em análise / reserva provisória", cor: "#e2b33c", corTexto: "#7a5a0b" },
+  { id: "em_analise", rotulo: "Em análise", cor: "#e2b33c", corTexto: "#7a5a0b" },
+  { id: "reservado", rotulo: "Reservado", cor: "#b67d3c", corTexto: "#795025" },
   { id: "ocupado", rotulo: "Ocupado", cor: "#c8463f", corTexto: "#8f2a24" },
   { id: "nao_confirmado", rotulo: "Não confirmado", cor: "#a7a29b", corTexto: "#5c5853" },
 ];
@@ -110,8 +111,8 @@ export const STATUS_ESTANDE_ROTULO: Record<StatusEstande, string> = {
   sem_informacao: "Não confirmado",
   disponivel: "Disponível",
   em_negociacao: "Em negociação (em análise)",
-  reservado: "Reserva provisória",
-  vendido: "Ocupado / contratado",
+  reservado: "Reservado",
+  vendido: "Ocupado",
 };
 
 export interface HistoricoEstande {

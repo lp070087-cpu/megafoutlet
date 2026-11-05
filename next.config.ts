@@ -4,18 +4,23 @@ import type { NextConfig } from "next";
 /**
  * Planta: ver src/lib/ambiente.ts.
  * O repositório contém somente a planta ILUSTRATIVA (src/data/planta.ts e areas.ts).
- * A planta oficial fica em src/data/oficial/ (fora do Git) e só entra no build quando o arquivo
- * existe E (desenvolvimento local OU NEXT_PUBLIC_PLANTA_DETALHADA=1).
+ * A planta oficial pertence à ferramenta privada, fora desta aplicação.
+ * Nem desenvolvimento nem variáveis de ambiente podem incorporá-la aqui.
  */
-const oficialDisponivel = existsSync("./src/data/oficial/planta.ts") && existsSync("./src/data/oficial/areas.ts");
-const plantaOficial =
-  oficialDisponivel && (process.env.NEXT_PUBLIC_PLANTA_DETALHADA === "1" || process.env.NODE_ENV !== "production");
+if (existsSync("./src/data/oficial") || existsSync("./public/planta") || process.env.NEXT_PUBLIC_PLANTA_DETALHADA === "1") {
+  throw new Error("Build público bloqueado: utilize a ferramenta privada separada para os dados oficiais.");
+}
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
-  env: { NEXT_PUBLIC_PLANTA_OFICIAL: plantaOficial ? "1" : "0" },
-  images: plantaOficial ? undefined : { localPatterns: [{ pathname: "/brand/**" }] },
+  env: { NEXT_PUBLIC_PLANTA_OFICIAL: "0" },
+  images: { localPatterns: [{ pathname: "/brand/**" }] },
+  // Webpack can compile the same CSS when Turbopack workers cannot start.
+  webpack(config) {
+    config.module.rules.push({ test: /globals\.css$/, enforce: "pre", use: ["@tailwindcss/turbopack"] });
+    return config;
+  },
   turbopack: {
     rules: {
       "*.css": {
@@ -23,12 +28,6 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
-    resolveAlias: plantaOficial
-      ? {
-          "@/data/planta": "./src/data/oficial/planta.ts",
-          "@/data/areas": "./src/data/oficial/areas.ts",
-        }
-      : {},
   },
 };
 

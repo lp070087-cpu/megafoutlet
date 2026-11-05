@@ -2,12 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Testes E2E contra o build de PRODUÇÃO (`next start`).
- * - Padrão: build público (modo demonstração desativado).
- * - E2E_DEMO=1: build com NEXT_PUBLIC_MODO_DEMO=1 para exercitar formulários e /admin.
+ * - E2E_DEMO=0: build público com NEXT_PUBLIC_MODO_DEMO=0.
+ * - E2E_DEMO=1: build local com MEGA_ADMIN_DEMO_LOCAL=1 para exercitar formulários e /admin.
  * - E2E_BASE_URL: testa uma URL já publicada (ex.: Vercel) em vez de subir o servidor local.
  */
 const PORTA = 3100;
-const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORTA}`;
+const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${PORTA}`;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -19,20 +19,22 @@ export default defineConfig({
   reporter: [["list"], ["json", { outputFile: "test-results/resultado.json" }]],
   use: {
     baseURL,
+    launchOptions: { args: ["--enable-unsafe-swiftshader"] },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
   projects: [
     { name: "unit", testMatch: /unit\.spec\.ts/ },
     { name: "desktop", testIgnore: /unit\.spec\.ts/, use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
-    { name: "mobile", testIgnore: /unit\.spec\.ts/, use: { ...devices["Pixel 7"] } },
+    { name: "mobile", testIgnore: /unit\.spec\.ts/, use: { ...devices["iPhone 13"], browserName: "chromium" } },
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: `npx next start -p ${PORTA}`,
+        command: `node node_modules/next/dist/bin/next start -H 127.0.0.1 -p ${PORTA}`,
         url: baseURL,
-        reuseExistingServer: true,
+        env: { MEGA_ADMIN_DEMO_LOCAL: process.env.E2E_DEMO === "0" ? "0" : "1" },
+        reuseExistingServer: false,
         timeout: 120_000,
       },
 });

@@ -18,19 +18,16 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Motion �
 
 ## Modo demonstração (padrão)
 
-Não há backend seguro (banco, autenticação, LGPD). Por isso, também no site publicado:
+Os formulários demonstrativos gravam apenas no `localStorage` do navegador e oferecem os canais oficiais. O envio à organização é feito pelo usuário no canal escolhido. Use `NEXT_PUBLIC_MODO_DEMO=0` no build para exibir apenas os canais oficiais.
 
-- formulários validam os campos e mostram estados de envio/sucesso/erro, mas **não enviam dados à organização**: o registro fica só no `localStorage` do navegador, com atalho para o WhatsApp oficial;
-- `/admin` é uma demonstração sem acesso a dados de outras pessoas (`noindex`).
-
-Build com `NEXT_PUBLIC_MODO_DEMO=0` desliga formulários (viram atalhos para canais oficiais) e faz `/admin` responder 404. Ver `src/lib/ambiente.ts`.
+O painel `/admin` responde 404 em produção por padrão e em todos os builds Vercel. A simulação funciona em desenvolvimento e pode ser ativada para testes de build local com `MEGA_ADMIN_DEMO_LOCAL=1`. Use somente dados fictícios.
 
 ## Planta: ilustrativa (pública) × oficial (local)
 
 A planta oficial (ALT 17, "para aprovação") **não tem divulgação autorizada** e não é versionada:
 
 - `src/data/planta.ts` e `src/data/areas.ts` — **planta ilustrativa** gerada por código: 247 espaços em 4 setores fictícios + 8 módulos de alimentação + 20 de feirinha (totais do resumo agregado), posições e numeração fictícias, sempre rotuladas "Demonstração ilustrativa · não oficial".
-- `src/data/oficial/` e `public/planta/` — planta oficial, **somente local** (`.gitignore`). Usada em `next dev` ou em build com `NEXT_PUBLIC_PLANTA_DETALHADA=1` quando os arquivos existem (ver `next.config.ts`).
+- A planta oficial fica em uma ferramenta privada separada. O build público rejeita a presença desses arquivos ou a tentativa de ativar dados detalhados (ver `next.config.ts`).
 - `src/data/resumo-planta.ts` — totais agregados (sem posições).
 - `src/data/evento.ts` — informações verificadas com fonte, incluindo os destaques da edição de novembro/2026.
 
@@ -45,7 +42,8 @@ npm run typecheck
 npm run lint
 npm run build
 npm run test:unit    # dados da planta e contrato de status
-npm run test:e2e     # Playwright contra o build de produção (desktop + mobile, inclui axe)
+MEGA_ADMIN_DEMO_LOCAL=1 npm run build
+npm run test:e2e     # build local demonstrativo (desktop + mobile, inclui axe)
 E2E_DEMO=0 npm run test:e2e   # exige build com NEXT_PUBLIC_MODO_DEMO=0
 E2E_BASE_URL=https://... npm run test:e2e   # testa uma URL publicada
 ```

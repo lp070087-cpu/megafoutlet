@@ -1,7 +1,7 @@
 import { PAVILHAO, type TipoArea } from "@/data/areas";
 import { PT_POR_METRO } from "@/data/planta";
 
-export const ALTURA_ESTANDE = 1.2;
+export const ALTURA_ESTANDE = 2.6;
 export const CENTRO = {
   x: PAVILHAO.x + PAVILHAO.w / 2,
   y: PAVILHAO.y + PAVILHAO.h / 2,
@@ -43,7 +43,7 @@ export const CORES_AREAS: Record<TipoArea, string> = {
 };
 
 export interface ComandoCamera {
-  tipo: "geral" | "ampliar" | "reduzir" | "focar";
+  tipo: "superior" | "geral" | "ampliar" | "reduzir" | "focar";
   sequencia: number;
   /** Para "focar": centro (em metros, coordenadas da cena) e raio aproximado do enquadramento. */
   alvo?: { x: number; z: number; raio: number };

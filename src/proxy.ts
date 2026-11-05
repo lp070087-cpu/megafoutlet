@@ -1,15 +1,13 @@
-import { NextResponse } from "next/server";
-import { PLANTA_DETALHADA } from "@/lib/ambiente";
+import { NextResponse, type NextRequest } from "next/server";
+import { ADMIN_DEMO } from "@/lib/ambiente";
 
-/**
- * Bloqueia os arquivos da planta oficial (public/planta/*) enquanto a divulgação
- * detalhada não for autorizada. Ver src/lib/ambiente.ts.
- */
-export function proxy() {
-  if (PLANTA_DETALHADA) return NextResponse.next();
+/** Bloqueia os caminhos privados antes de iniciar a resposta da página. */
+export function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  if (ADMIN_DEMO && (path === "/admin" || path.startsWith("/admin/"))) return NextResponse.next();
   return new NextResponse("Not found", { status: 404, headers: { "cache-control": "no-store" } });
 }
 
 export const config = {
-  matcher: "/planta/:path*",
+  matcher: ["/planta/:path*", "/admin/:path*"],
 };

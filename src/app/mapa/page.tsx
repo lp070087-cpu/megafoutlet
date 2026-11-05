@@ -18,8 +18,8 @@ type Params = Promise<Record<string, string | string[] | undefined>>;
 
 /** Lê ?estande= dentro de um limite de Suspense (exigência do Next 16 para não bloquear o prerender). */
 async function ExploradorComParametros({ searchParams }: { searchParams: Params }) {
-  const { estande } = await searchParams;
-  return <ExploradorMapa estandeInicial={typeof estande === "string" ? estande : undefined} />;
+  const { estande, vista } = await searchParams;
+  return <ExploradorMapa vistaInicial={vista === "2d" ? "2d" : undefined} estandeInicial={typeof estande === "string" ? estande : undefined} />;
 }
 
 const principais = ESTANDES.filter((e) => e.serie === "principal").length;

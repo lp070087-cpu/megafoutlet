@@ -5,7 +5,7 @@ import Mapa3DCard from "@/components/mapa3d/Mapa3DCard";
 import { AVISO_PLANTA } from "@/data/evento";
 import { ESTANDES, rotuloEstande } from "@/data/planta";
 import { alterarStatusEstande, historicoEstandes, statusEstandes } from "@/lib/demo-store";
-import { STATUS_ESTANDE, type StatusEstande } from "@/lib/types";
+import { STATUS_ESTANDE, STATUS_ESTANDE_ROTULO, type StatusEstande } from "@/lib/types";
 import { useAdminStore, useFeedback } from "./useAdminStore";
 import {
   buttonClass,
@@ -42,6 +42,7 @@ export function EstandesPanel() {
   const [serie, setSerie] = useState("");
   const [dimension, setDimension] = useState("");
   const [sector, setSector] = useState("");
+  const [estado, setEstado] = useState("");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(24);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -59,6 +60,7 @@ export function EstandesPanel() {
     (!serie || item.serie === serie)
     && (!dimension || item.dimensao === dimension)
     && (!sector || item.setor === sector)
+    && (!estado || currentStatus(item.id) === estado)
     && (!needle || item.id.toLocaleLowerCase("pt-BR").includes(needle)),
   );
   const withoutInfo = ESTANDES.filter(item => currentStatus(item.id) === "sem_informacao").length;
@@ -97,7 +99,7 @@ export function EstandesPanel() {
           hint="Interesses registrados neste navegador"
         />
       </div>
-      <div className="mb-6 flex gap-2" role="group" aria-label="Visualiza??o dos estandes">
+      <div className="mb-6 flex gap-2" role="group" aria-label="Visualização dos estandes">
         <button
           type="button"
           className={buttonClass}
@@ -174,6 +176,23 @@ export function EstandesPanel() {
           </select>
         </div>
       </div>
+      <label className="mb-5 flex max-w-sm flex-col gap-2 text-sm" htmlFor="filtro-status-admin">
+        Disponibilidade
+        <select id="filtro-status-admin" className={inputClass} value={estado} onChange={e => setEstado(e.target.value)}>
+          <option value="">Todos os estados</option>
+          {STATUS_ESTANDE.map(value => <option key={value} value={value}>{STATUS_ESTANDE_ROTULO[value]}</option>)}
+        </select>
+      </label>
+      <details className="mb-6 rounded-2xl border border-line bg-paper p-4">
+        <summary className="min-h-11 cursor-pointer text-sm font-semibold">Indicadores de demonstração por setor</summary>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <caption className="py-3 text-left text-muted">Dados locais deste navegador; não representam disponibilidade oficial.</caption>
+            <thead><tr><th className="p-2">Setor</th>{STATUS_ESTANDE.map(s => <th key={s} className="p-2">{STATUS_ESTANDE_ROTULO[s]}</th>)}</tr></thead>
+            <tbody>{sectors.map(setor => <tr key={setor} className="border-t border-line"><th className="p-2">{setor}</th>{STATUS_ESTANDE.map(s => <td key={s} className="p-2 tabular-nums">{ESTANDES.filter(e => e.setor === setor && currentStatus(e.id) === s).length}</td>)}</tr>)}</tbody>
+          </table>
+        </div>
+      </details>
       <p role="status" className="mb-5 text-sm text-muted">{filtered.length} espaços encontrados</p>
       {!pending && <Feedback {...feedback} />}
       {!filtered.length ? (

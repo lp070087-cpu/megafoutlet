@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EVENTO, whatsappLink } from "@/data/evento";
-import { MODO_DEMO, PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
+import { ADMIN_DEMO, MODO_DEMO, PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
 
 const link = "inline-flex min-h-11 items-center text-sm text-ink/80 transition-colors hover:text-rose-deep";
 
@@ -55,7 +55,7 @@ export function Footer() {
             Informações conforme canais oficiais do evento; programação e planta sujeitas a alterações pela organização.
           </p>
           <div className="flex shrink-0 items-center gap-5">
-            {MODO_DEMO && <Link className="inline-flex min-h-11 items-center underline underline-offset-4" href="/admin">Painel (demonstração)</Link>}
+            {ADMIN_DEMO && <Link className="inline-flex min-h-11 items-center underline underline-offset-4" href="/admin">Painel (demonstração)</Link>}
             <span>Apresentação desenvolvida pela Unitrix</span>
           </div>
         </div>

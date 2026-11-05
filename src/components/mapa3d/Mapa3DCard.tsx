@@ -1,5 +1,9 @@
 "use client";
 
+import FiltrosMapa from "@/components/mapa/FiltrosMapa";
+import { correspondeFiltro, FILTROS_INICIAIS, type FiltrosMapa as Filtros } from "@/lib/filtros-mapa";
+
+
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { createPortal } from "react-dom";
@@ -30,15 +34,21 @@ const Cena = dynamic(() => import("./CenaPavilhao"), {
 const toolClass = "inline-flex min-h-11 min-w-11 shrink-0 items-center whitespace-nowrap justify-center rounded-full border border-line bg-paper px-3 text-xs font-semibold text-graphite transition-colors hover:bg-sand disabled:opacity-40";
 
 export interface Mapa3DCardProps {
+  estandeInicial?: string;
   className?: string;
   modoAdmin?: boolean;
+  filtrosExternos?: Filtros;
+  onFiltrosChange?: (filtros: Filtros) => void;
   onSelecionarEstande?: (estande: Estande | null) => void;
   onSolicitarAlteracaoStatus?: (estande: Estande, status: StatusEstande) => void;
 }
 
 export default function Mapa3DCard({
+  estandeInicial,
   className = "",
   modoAdmin = false,
+  filtrosExternos,
+  onFiltrosChange,
   onSelecionarEstande,
   onSolicitarAlteracaoStatus,
 }: Mapa3DCardProps) {
@@ -46,7 +56,7 @@ export default function Mapa3DCard({
   const fullscreenButton = useRef<HTMLButtonElement>(null);
   const id = useId();
   const [webgl, setWebgl] = useState<boolean | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(estandeInicial ?? null);
   const [coresPlanta, setCoresPlanta] = useState(PLANTA_ILUSTRATIVA);
   const [cssFull, setCssFull] = useState(false);
   const [placeholderHeight, setPlaceholderHeight] = useState(0);
@@ -55,12 +65,16 @@ export default function Mapa3DCard({
   const [setor, setSetor] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   const [lista, setLista] = useState(false);
+  const [filtrosLocais, setFiltrosLocais] = useState(FILTROS_INICIAIS);
+  const filtros = filtrosExternos ?? filtrosLocais;
+  const status = useStatusEstandes();
+  const filtrados = useMemo(() => ESTANDES.filter(e => correspondeFiltro(e, filtros, status.statusDe(e.id))), [filtros, status]);
+  const visiveis = useMemo(() => new Set(filtrados.map(e => e.id)), [filtrados]);
   const resultados = useMemo(() => {
     const q = normalizar(busca);
     if (!q) return [];
-    return ESTANDES.filter(e => normalizar(e.numero).startsWith(q) || normalizar(e.id).startsWith(q) || normalizar(e.setor).includes(q)).slice(0, 6);
-  }, [busca]);
-  const status = useStatusEstandes();
+    return filtrados.filter(e => normalizar(e.numero).startsWith(q) || normalizar(e.id).startsWith(q) || normalizar(e.setor).includes(q)).slice(0, 6);
+  }, [busca, filtrados]);
   const selected = ESTANDES.find(item => item.id === selectedId);
   const full = cssFull || nativeFull;
   const fail = useCallback(() => setWebgl(false), []);
@@ -107,7 +121,7 @@ export default function Mapa3DCard({
     function trap(event: KeyboardEvent) {
       if (event.key !== "Tab") return;
       const items = root.current?.querySelectorAll<HTMLElement>(
-        'a[href],button:not([disabled]),select:not([disabled]),[tabindex="0"]',
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]',
       );
       if (!items?.length) return;
       const first = items[0];
@@ -165,7 +179,7 @@ export default function Mapa3DCard({
   function close() {
     setSelectedId(null);
     onSelecionarEstande?.(null);
-    requestAnimationFrame(() => root.current?.focus());
+    requestAnimationFrame(() => root.current?.focus({ preventScroll: true }));
   }
   function camera(tipo: ComandoCamera["tipo"]) {
     setComando(previous => ({ tipo, sequencia: previous.sequencia + 1 }));
@@ -174,6 +188,7 @@ export default function Mapa3DCard({
   const card = (
     <article
       ref={root}
+      data-lenis-prevent
       aria-labelledby={`${id}-titulo`}
       tabIndex={-1}
       onKeyDown={event => {
@@ -181,7 +196,7 @@ export default function Mapa3DCard({
         if (selected) { event.stopPropagation(); close(); }
         else if (cssFull) { event.stopPropagation(); setCssFull(false); }
       }}
-      className={`${cssFull ? "fixed inset-0 z-[100]" : "relative"} ${full ? "flex h-dvh w-full flex-col" : "overflow-hidden rounded-[28px]"} border border-line bg-ivory text-ink ${className}`}
+      className={`${cssFull ? "fixed inset-0 z-[100]" : "relative"} ${full ? "flex h-dvh w-full flex-col overflow-y-auto overscroll-contain" : "overflow-hidden rounded-[28px]"} border border-line bg-ivory text-ink ${className}`}
     >
       <header className="shrink-0 border-b border-line px-4 py-4 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -190,9 +205,9 @@ export default function Mapa3DCard({
               Mapa interativo · 3D
               {PLANTA_ILUSTRATIVA && <span className="rounded-full border border-rose/40 bg-rose-soft px-2 py-0.5 tracking-[0.12em] text-rose-deep">Demonstração ilustrativa · não oficial</span>}
             </p>
-            <h3 id={`${id}-titulo`} className="mt-1 font-display text-2xl tracking-tight">Explore o pavilhão.</h3>
+            <h3 id={`${id}-titulo`} className="mt-1 font-display text-2xl tracking-tight">Explore os espaços da feira.</h3>
           </div>
-          <Link href="/mapa" className="inline-flex min-h-11 items-center text-xs font-semibold underline underline-offset-4">Ver em 2D ↗</Link>
+          <Link href={`/mapa?vista=2d${selectedId ? `&estande=${encodeURIComponent(selectedId)}` : ""}`} className="inline-flex min-h-11 items-center text-xs font-semibold underline underline-offset-4">Ver em 2D ↗</Link>
         </div>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative w-full sm:max-w-60">
@@ -235,6 +250,8 @@ export default function Mapa3DCard({
         </div>
         <div className="-mx-4 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0" role="group" aria-label="Controles da visualização 3D">
           <button type="button" className={toolClass} disabled={webgl !== true} onClick={() => camera("geral")} aria-label="Redefinir câmera para a visão geral do pavilhão">Redefinir câmera</button>
+          <button type="button" className={toolClass} disabled={webgl !== true} onClick={() => camera("superior")}>Visão superior</button>
+          <button type="button" className={toolClass} disabled={webgl !== true} onClick={() => camera("geral")}>Isométrica</button>
           <button type="button" className={toolClass} disabled={webgl !== true} onClick={() => camera("ampliar")} aria-label="Ampliar mapa 3D">+</button>
           <button type="button" className={toolClass} disabled={webgl !== true} onClick={() => camera("reduzir")} aria-label="Reduzir mapa 3D">−</button>
           <button type="button" className={toolClass} aria-pressed={!coresPlanta} onClick={() => setCoresPlanta(false)}>Ver status</button>
@@ -244,12 +261,14 @@ export default function Mapa3DCard({
             {full ? "Sair da tela cheia" : "Tela cheia"}
           </button>
         </div>
+        <FiltrosMapa value={filtros} total={filtrados.length} onChange={value => { (onFiltrosChange ?? setFiltrosLocais)(value); setSetor(null); setSelectedId(null); onSelecionarEstande?.(null); }} />
       </header>
-      <div className={`relative isolate ${full ? "min-h-0 flex-1" : "h-[min(68svh,500px)] sm:h-[600px]"}`} aria-label="Pavilhão em perspectiva tridimensional">
+      <div className={`relative isolate ${full ? "min-h-72 flex-1" : "h-[min(68svh,500px)] sm:h-[600px]"}`} aria-label="Pavilhão em perspectiva tridimensional">
         {lista && (
           <div data-lenis-prevent className="absolute inset-0 z-20 overflow-y-auto bg-ivory p-4 sm:p-6">
             <p className="text-xs text-muted">Alternativa acessível ao 3D: escolha um espaço para vê-lo no mapa.</p>
-            {SETORES.filter(s => !setor || s.nome === setor).map(s => (
+            {SETORES.map(s => ({ ...s, itens: s.itens.filter(e => visiveis.has(e.id)) }))
+              .filter(s => s.itens.length > 0 && (!setor || s.nome === setor)).map(s => (
               <section key={s.nome} className="mt-5" aria-label={s.nome}>
                 <h4 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{s.nome} · {s.itens.length}</h4>
                 <ul className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
@@ -267,11 +286,12 @@ export default function Mapa3DCard({
         )}
         {webgl === null ? <SkeletonCena /> : webgl === false ? <Fallback2D /> : (
           <LimiteCena fallback={<Fallback2D />}>
-            <Cena selecionado={selectedId} coresPlanta={coresPlanta} comando={comando} onSelecionar={select} onFalha={fail} />
+            <Cena visiveis={visiveis} selecionado={selectedId} coresPlanta={coresPlanta} comando={comando} onSelecionar={select} onFalha={fail} />
           </LimiteCena>
         )}
-        {selected && webgl === true && (
+        {selected && (
           <PainelEstande
+            miniaturaDisponivel={webgl === true}
             estande={selected}
             status={status.statusDe(selected.id)}
             grupo={status.grupoDe(selected.id)}

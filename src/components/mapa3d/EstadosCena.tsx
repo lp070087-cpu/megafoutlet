@@ -7,7 +7,7 @@ import { Component, type ReactNode } from "react";
 
 export function SkeletonCena() {
   return (
-    <div role="status" className="flex h-full min-h-96 flex-col items-center justify-center bg-sand px-6 text-center">
+    <div role="status" className="flex h-full flex-col items-center justify-center bg-sand px-6 text-center">
       <div aria-hidden="true" className="grid grid-cols-5 gap-2 opacity-40 motion-safe:animate-pulse">
         {Array.from({ length: 20 }, (_, index) => (
           <span key={index} className="h-5 w-7 rounded-sm border border-line bg-paper sm:h-7 sm:w-10" />
@@ -21,7 +21,7 @@ export function SkeletonCena() {
 
 export function Fallback2D() {
   return (
-    <div className="flex h-full min-h-96 flex-col items-center justify-center gap-5 bg-sand p-6 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-5 bg-sand p-6 text-center">
       {PLANTA_DETALHADA && (
         <div className="relative h-56 w-full max-w-sm">
           <Image
@@ -34,7 +34,7 @@ export function Fallback2D() {
         </div>
       )}
       <p className="max-w-md text-sm leading-6 text-muted">{PLANTA_DETALHADA ? "A visualização 3D não está disponível neste navegador. Você pode consultar a planta e os espaços no mapa 2D." : "A visualização 3D não está disponível neste navegador. A demonstração ilustrativa também pode ser explorada em 2D e em lista."}</p>
-      <Link href="/mapa" className="inline-flex min-h-12 items-center rounded-full bg-rose px-6 text-sm font-semibold text-white hover:bg-rose-deep">
+      <Link href="/mapa?vista=2d" className="inline-flex min-h-12 items-center rounded-full bg-rose px-6 text-sm font-semibold text-white hover:bg-rose-deep">
         {PLANTA_DETALHADA ? "Abrir planta 2D →" : "Abrir mapa 2D ilustrativo →"}
       </Link>
     </div>

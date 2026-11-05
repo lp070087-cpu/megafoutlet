@@ -1,5 +1,9 @@
 "use client";
 
+import FiltrosMapa from "@/components/mapa/FiltrosMapa";
+import { correspondeFiltro, type FiltrosMapa as Filtros } from "@/lib/filtros-mapa";
+
+
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -61,13 +65,18 @@ const fmtDim = (d: string) => d.replace("x", " × ") + " m";
 const fmtArea = (a: number | null) => (a == null ? "—" : `${a.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} m²`);
 
 /* Área útil do pavilhão (exclui margens, legenda e carimbo da planta) */
-const ENQUADRAMENTO = { x: 175, y: 150, w: 935, h: 1490 };
+const ENQUADRAMENTO = { x: PAVILHAO.x - 20, y: PAVILHAO.y - 30, w: PAVILHAO.w + 40, h: PAVILHAO.h + 60 };
 const MIN_ESCALA = 0.35;
 const MAX_ESCALA = 9;
 
 type Vista = { s: number; tx: number; ty: number };
 
-export default function MapaInterativo({ estandeInicial }: { estandeInicial?: string }) {
+export default function MapaInterativo({ estandeInicial, onSelecionar, filtros, onFiltrosChange }: {
+  estandeInicial?: string;
+  onSelecionar?: (id: string | null) => void;
+  filtros: Filtros;
+  onFiltrosChange: (filtros: Filtros) => void;
+}) {
   const reduzir = useReducedMotion();
   const palcoRef = useRef<HTMLDivElement>(null);
   const [vista, setVista] = useState<Vista>({ s: 0.5, tx: 0, ty: 0 });
@@ -88,6 +97,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
 
   /** Seleciona um espaço guardando onde estava o foco (para devolvê-lo ao fechar). */
   const selecionar = useCallback((id: string | null) => {
+    onSelecionar?.(id);
     if (id) {
       if (!retornoFoco.current) retornoFoco.current = document.activeElement as HTMLElement | null;
       setSelecionadoId(id);
@@ -99,20 +109,20 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
       if (alvo && document.contains(alvo) && alvo.offsetParent !== null) alvo.focus({ preventScroll: true });
       else palcoRef.current?.focus({ preventScroll: true });
     }
-  }, []);
+  }, [onSelecionar]);
 
   const selecionado = useMemo(() => ESTANDES.find((e) => e.id === selecionadoId) ?? null, [selecionadoId]);
   const testeFiltro = FILTROS.find((f) => f.id === filtro)!.teste;
-  const visiveis = useMemo(() => new Set(ESTANDES.filter(testeFiltro).map((e) => e.id)), [testeFiltro]);
+  const visiveis = useMemo(() => new Set(ESTANDES.filter(e => testeFiltro(e) && correspondeFiltro(e, filtros, st.statusDe(e.id))).map((e) => e.id)), [testeFiltro, filtros, st]);
 
   const resultados = useMemo(() => {
     const q = busca.trim().toLowerCase().replace(/-/g, "").replace(/^0+(?=\d)/, "");
     if (!q) return [];
-    return ESTANDES.filter((e) => {
+    return ESTANDES.filter(e => visiveis.has(e.id)).filter((e) => {
       const n = e.numero.toLowerCase().replace(/^0+(?=\d)/, "");
       return n.startsWith(q) || e.dimensao.includes(q) || e.setor.toLowerCase().includes(q);
     }).slice(0, 8);
-  }, [busca]);
+  }, [busca, visiveis]);
 
   /* ----------------------------------------------------------- vista */
   const limitar = useCallback((v: Vista): Vista => {
@@ -319,6 +329,7 @@ export default function MapaInterativo({ estandeInicial }: { estandeInicial?: st
         </div>
       </div>
 
+      <FiltrosMapa value={filtros} total={visiveis.size} onChange={value => { onFiltrosChange(value); selecionar(null); }} />
       {/* Barra de ferramentas */}
       <div className="flex flex-col gap-3 border-y border-line bg-paper/80 px-4 py-3 backdrop-blur sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
         <div className="relative w-full lg:max-w-xs">

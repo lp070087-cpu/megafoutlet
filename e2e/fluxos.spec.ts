@@ -93,7 +93,7 @@ test("mapa 2D: deep link ?estande= abre o detalhe", async ({ page }) => {
 
 test("mapa 3D: carrega cena (ou alternativa 2D) com indicadores calculados", async ({ page }) => {
   await page.goto("/");
-  const card = page.getByRole("article").filter({ hasText: "Explore o pavilhão." });
+  const card = page.getByRole("article").filter({ hasText: "Explore os espaços da feira." });
   await card.scrollIntoViewIfNeeded();
   await expect(card).toBeVisible();
   await expect(card.locator("canvas").or(card.getByRole("link", { name: /mapa 2D/i }).first())).toBeVisible({ timeout: 30_000 });
@@ -104,7 +104,7 @@ test("mapa 3D: carrega cena (ou alternativa 2D) com indicadores calculados", asy
 
 test("mapa 3D: busca, setores, lista acessível e redefinir câmera", async ({ page }) => {
   await page.goto("/mapa");
-  const card = page.getByRole("article").filter({ hasText: "Explore o pavilhão." });
+  const card = page.getByRole("article").filter({ hasText: "Explore os espaços da feira." });
   const temCanvas = await card.locator("canvas").waitFor({ timeout: 30_000 }).then(() => true, () => false);
   const setores = card.getByRole("group", { name: "Navegar por setor" });
   await setores.getByRole("button", { name: "Setor B" }).click();
@@ -112,7 +112,8 @@ test("mapa 3D: busca, setores, lista acessível e redefinir câmera", async ({ p
   await card.getByRole("button", { name: "Lista" }).click();
   await expect(card.getByRole("region", { name: "Setor B" })).toBeVisible();
   await card.getByRole("region", { name: "Setor B" }).getByRole("button", { name: "B07" }).click();
-  if (temCanvas) await expect(card.getByRole("dialog").getByRole("heading", { name: "Espaço B07" })).toBeVisible();
+  await expect(card.getByRole("dialog").getByRole("heading", { name: "Espaço B07" })).toBeVisible();
+  await card.getByRole("button", { name: "Fechar detalhes do estande" }).click();
   const busca = card.getByRole("searchbox", { name: /Buscar espaço/ });
   await busca.fill("C03");
   await busca.press("Enter");
@@ -120,7 +121,9 @@ test("mapa 3D: busca, setores, lista acessível e redefinir câmera", async ({ p
     await expect(card.getByRole("dialog").getByRole("heading", { name: "Espaço C03" })).toBeVisible();
     await expect(card.getByRole("dialog").getByRole("link", { name: /Quero expor/ })).toHaveAttribute("href", "/expositor?estande=C-03");
   }
-  await card.getByRole("button", { name: /Redefinir câmera/ }).click({ trial: !temCanvas });
+  const reset = card.getByRole("button", { name: /Redefinir câmera/ });
+  if (temCanvas) await reset.click();
+  else await expect(reset).toBeDisabled();
 });
 
 test.describe("build público (sem coleta de dados)", () => {
@@ -152,7 +155,14 @@ test.describe("modo demonstração (formulários e admin)", () => {
   test.skip(!DEMO, "somente no modo demonstração");
 
   test("expositor: valida, envia e confirma sem reserva", async ({ page }) => {
-    await page.goto("/expositor?estande=A-12");
+    await abrirMapa2D(page);
+    const busca = page.getByRole("combobox", { name: /Buscar estande/ });
+    await busca.fill("A12");
+    await busca.press("Enter");
+    const detalhe = page.getByRole("dialog");
+    await expect(detalhe).toContainText("9 m²");
+    await detalhe.getByRole("link", { name: /Tenho interesse/ }).click();
+    await expect(page).toHaveURL(/\/expositor\?estande=A-12/);
     await page.getByRole("button", { name: /Enviar meu interesse/ }).click();
     await expect(page.locator("[aria-invalid=true]").first()).toBeFocused();
     await page.locator("[name=responsavel]").fill("Teste Automatizado");
@@ -192,13 +202,21 @@ test.describe("modo demonstração (formulários e admin)", () => {
     await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible();
     await page.getByRole("button", { name: /Carregar dados fictícios/ }).click();
     await expect(page.getByRole("status").filter({ hasText: /25 lojistas e 60 visitantes adicionados/ })).toBeVisible();
-    await page.evaluate(() => {
-      localStorage.setItem("mfo.demo.estandes.v1", JSON.stringify({ "A-12": "vendido", "A-11": "disponivel" }));
-    });
+    const nav = page.getByRole("navigation", { name: /^Administração/ });
+    await nav.getByRole("link", { name: "Lojistas", exact: true }).click();
+    await page.locator("#lojista-busca").fill("loja inexistente e2e");
+    await expect(page.getByRole("heading", { name: "Nenhuma solicitação com esses filtros" })).toBeVisible();
+    await nav.getByRole("link", { name: "Visitantes", exact: true }).click();
+    await page.locator("#visitante-busca").fill("visitante inexistente e2e");
+    await expect(page.getByText(/Nenhum visitante/).first()).toBeVisible();
+    await nav.getByRole("link", { name: "Estandes", exact: true }).click();
+    await page.getByLabel("Código do espaço").fill("A-12");
+    await page.getByLabel("Status administrativo local").selectOption("vendido");
+    await page.getByRole("button", { name: "Confirmar alteração local" }).click();
+    await expect(page.getByRole("status").filter({ hasText: /Histórico registrado/ })).toBeVisible();
     await abrirMapa2D(page);
     const ind = page.getByRole("list", { name: "Indicadores de disponibilidade" });
     await expect(ind).toContainText(/1\s*Ocupado/);
-    await expect(ind).toContainText(/1\s*Disponível/);
-    await expect(ind).toContainText(/273\s*Não confirmado/);
+    await expect(ind).toContainText(/274\s*Não confirmado/);
   });
 });

@@ -6,7 +6,7 @@ import { useEffect, useId, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Estande } from "@/data/planta";
 import { GRUPOS_STATUS, STATUS_ESTANDE, STATUS_ESTANDE_ROTULO, type GrupoStatus, type StatusEstande } from "@/lib/types";
-import { dimensoes } from "./geometria";
+import { ALTURA_ESTANDE, dimensoes } from "./geometria";
 import { PLANTA_ILUSTRATIVA } from "@/lib/ambiente";
 import { LimiteCena } from "./EstadosCena";
 
@@ -20,11 +20,12 @@ interface Props {
   status: StatusEstande;
   grupo: GrupoStatus;
   modoAdmin: boolean;
+  miniaturaDisponivel?: boolean;
   onFechar: () => void;
   onSolicitarAlteracaoStatus?: (estande: Estande, status: StatusEstande) => void;
 }
 
-export function PainelEstande({ estande, status, grupo, modoAdmin, onFechar, onSolicitarAlteracaoStatus }: Props) {
+export function PainelEstande({ estande, status, grupo, modoAdmin, miniaturaDisponivel = true, onFechar, onSolicitarAlteracaoStatus }: Props) {
   const ref = useRef<HTMLElement>(null);
   const id = useId();
   const reduced = useReducedMotion();
@@ -37,6 +38,7 @@ export function PainelEstande({ estande, status, grupo, modoAdmin, onFechar, onS
   return (
     <motion.aside
       ref={ref}
+      data-lenis-prevent
       role="dialog"
       aria-modal="false"
       aria-labelledby={`${id}-titulo`}
@@ -59,13 +61,13 @@ export function PainelEstande({ estande, status, grupo, modoAdmin, onFechar, onS
       </p>
       <figure className="mt-5">
         <div className="h-40 overflow-hidden rounded-xl bg-sand">
-          {medidas.largura && medidas.profundidade ? (
+          {miniaturaDisponivel && medidas.largura && medidas.profundidade ? (
             <LimiteCena fallback={<p className="p-4 text-xs text-muted">Escala descrita nas dimensões abaixo.</p>}>
               <Miniatura largura={medidas.largura} profundidade={medidas.profundidade} />
             </LimiteCena>
-          ) : <p className="p-4 text-xs text-muted">Dimensões não informadas para a miniatura.</p>}
+          ) : <p className="p-4 text-xs text-muted">{miniaturaDisponivel ? "Dimensões não informadas para a miniatura." : "Miniatura 3D indisponível neste navegador. Consulte as dimensões abaixo."}</p>}
         </div>
-        <figcaption className="mt-2 text-[10px] leading-5 text-muted">Volume ilustrativo de 1,20 m de altura. Figura humana de 1,70 m para escala. Não representa o projeto de montagem.</figcaption>
+        <figcaption className="mt-2 text-[10px] leading-5 text-muted">Volume ilustrativo de {ALTURA_ESTANDE.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} m de altura. Figura humana de 1,70 m para escala. Não representa o projeto de montagem.</figcaption>
       </figure>
       <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 text-xs">
         <div><dt className="text-muted">Largura</dt><dd className="mt-1 font-semibold">{label(medidas.largura)}</dd></div>
